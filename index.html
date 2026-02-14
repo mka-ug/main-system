@@ -28,9 +28,9 @@
 body { font-family:'Libre Franklin',sans-serif; background:var(--cream); color:#2d2d2d; }
 header {
 position:fixed; top:0; left:0; right:0; height:90px;
-background:white; 
+background:white;
 border-bottom:1px solid var(--border);
-z-index:1000; 
+z-index:1000;
 box-shadow:0 4px 20px rgba(0,0,0,0.04);
 }
 .header-container {
@@ -55,8 +55,8 @@ align-items: center;
 gap: 15px;
 }
 .logo {
-font-family:'Cormorant Garamond',serif; 
-font-size:2.2rem; 
+font-family:'Cormorant Garamond',serif;
+font-size:2.2rem;
 color:var(--deep-green);
 display: flex;
 align-items: center;
@@ -66,11 +66,11 @@ gap: 10px;
 font-size: 2.5rem;
 color: var(--gold);
 }
-.logo small { 
-font-size:0.85rem; 
-display:block; 
-margin-top:-2px; 
-color:var(--gold); 
+.logo small {
+font-size:0.85rem;
+display:block;
+margin-top:-2px;
+color:var(--gold);
 letter-spacing:1.5px;
 }
 .search-section {
@@ -1154,7 +1154,6 @@ lajna: [],
 atfal: [],
 jalsa: []
 };
-
 // Load data from localStorage
 function loadData() {
 const savedData = localStorage.getItem('acmsUgandaData');
@@ -1170,13 +1169,11 @@ loadPageData('departments');
 loadPageData('regions');
 loadPageData('mosques');
 }
-
 // Save data to localStorage
 function saveData() {
 localStorage.setItem('acmsUgandaData', JSON.stringify(database));
 updateStats();
 }
-
 // Initialize sample data
 function initializeSampleData() {
 database.members = [
@@ -1187,8 +1184,8 @@ database.members = [
 { id: 'UG-1005', name: 'Omar Hassan', region: 'Central', department: 'Khuddam', status: 'active', age: 22, joined: '2020' }
 ];
 database.departments = [
-{ id: 'dept-001', name: 'Finance & Chanda', head: 'Muhammad Iqbal', members: 15, status: 'active' },
-{ id: 'dept-002', name: 'Education Department', head: 'Abdul Rahman', members: 23, status: 'active' },
+{ id: 'dept-001', name: 'Umoomi', head: 'Muhammad Iqbal', members: 15, status: 'active' },
+{ id: 'dept-002', name: 'Umoomi', head: 'Abdul Rahman', members: 23, status: 'active' },
 { id: 'dept-003', name: 'Health Services', head: 'Dr. Amina Yusuf', members: 18, status: 'active' },
 { id: 'dept-004', name: 'Publications & Media', head: 'Zaid Khan', members: 12, status: 'active' }
 ];
@@ -1221,13 +1218,11 @@ database.jalsa = [
 ];
 saveData();
 }
-
 // ==================== PAGE SWITCHING ====================
 let currentEntityType = '';
 let currentItemName = '';
 let currentPage = 'dashboard';
 let currentItemId = null;
-
 function showPage(id) {
 currentPage = id;
 document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
@@ -1237,7 +1232,6 @@ const activeMenuItem = document.querySelector(`.menu-item[onclick="showPage('${i
 if (activeMenuItem) activeMenuItem.classList.add('active');
 loadPageData(id);
 }
-
 function loadPageData(page) {
 switch(page) {
 case 'members':
@@ -1266,7 +1260,6 @@ loadJalsaTable();
 break;
 }
 }
-
 // ==================== TABLE LOADERS ====================
 function loadMembersTable() {
 const tbody = document.getElementById('membersTableBody');
@@ -1292,7 +1285,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadDepartmentsTable() {
 const tbody = document.getElementById('departmentsTableBody');
 tbody.innerHTML = '';
@@ -1305,18 +1297,17 @@ row.innerHTML = `
 <td>${dept.members}</td>
 <td><span class="badge badge-active">Active</span></td>
 <td class="item-actions">
-<button class="item-btn btn-edit" onclick="openEditModal('department', '${dept.id}')">
-<i class="fas fa-edit"></i> Edit
+<button class="item-btn btn-view" onclick="enterDepartment('${dept.id}', '${dept.name.replace(/'/g, "\\'")}')">
+<i class="fas fa-door-open"></i> Enter
 </button>
-<button class="item-btn btn-remove" onclick="openDeleteConfirm('department', '${dept.id}', '${dept.name}')">
-<i class="fas fa-trash"></i> Remove
+<button class="item-btn btn-edit" onclick="manageDepartment('${dept.id}', '${dept.name.replace(/'/g, "\\'")}')">
+<i class="fas fa-cog"></i> Manage
 </button>
 </td>
 `;
 tbody.appendChild(row);
 });
 }
-
 function loadRegionsTable() {
 const tbody = document.getElementById('regionsTableBody');
 tbody.innerHTML = '';
@@ -1340,7 +1331,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadMosquesTable() {
 const tbody = document.getElementById('mosquesTableBody');
 tbody.innerHTML = '';
@@ -1365,7 +1355,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadKhuddamTable() {
 const tbody = document.getElementById('khuddamTableBody');
 tbody.innerHTML = '';
@@ -1389,7 +1378,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadLajnaTable() {
 const tbody = document.getElementById('lajnaTableBody');
 tbody.innerHTML = '';
@@ -1413,7 +1401,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadAtfalTable() {
 const tbody = document.getElementById('atfalTableBody');
 tbody.innerHTML = '';
@@ -1437,7 +1424,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 function loadJalsaTable() {
 const tbody = document.getElementById('jalsaTableBody');
 tbody.innerHTML = '';
@@ -1461,7 +1447,6 @@ row.innerHTML = `
 tbody.appendChild(row);
 });
 }
-
 // ==================== CRUD OPERATIONS ====================
 function openAddModal(entityType) {
 currentEntityType = entityType;
@@ -1473,7 +1458,6 @@ document.getElementById('itemRegion').value = '';
 document.getElementById('itemStatus').value = 'active';
 document.getElementById('crudModal').style.display = 'flex';
 }
-
 function openEditModal(entityType, itemId) {
 currentEntityType = entityType;
 currentItemId = itemId;
@@ -1487,7 +1471,6 @@ document.getElementById('itemStatus').value = item.status || 'active';
 document.getElementById('crudModal').style.display = 'flex';
 }
 }
-
 function findItemById(entityType, id) {
 switch(entityType) {
 case 'member': return database.members.find(m => m.id === id);
@@ -1501,11 +1484,9 @@ case 'jalsa': return database.jalsa.find(j => j.id === id);
 }
 return null;
 }
-
 function closeModal() {
 document.getElementById('crudModal').style.display = 'none';
 }
-
 function getEntityLabel(type) {
 const labels = {
 'member': 'Member',
@@ -1519,7 +1500,6 @@ const labels = {
 };
 return labels[type] || 'Item';
 }
-
 document.getElementById('crudForm').onsubmit = function(e) {
 e.preventDefault();
 const name = document.getElementById('itemName').value;
@@ -1546,7 +1526,6 @@ closeModal();
 loadPageData(currentPage);
 saveData();
 }
-
 function generateId(entityType) {
 const prefix = {
 'member': 'UG-',
@@ -1570,7 +1549,6 @@ const count = {
 }[entityType] || 0;
 return `${prefix}${String(count + 1001).padStart(4, '0')}`;
 }
-
 function addItem(entityType, item) {
 switch(entityType) {
 case 'member': database.members.push(item); break;
@@ -1583,7 +1561,6 @@ case 'atfal': database.atfal.push(item); break;
 case 'jalsa': database.jalsa.push(item); break;
 }
 }
-
 function updateItem(entityType, id, updatedItem) {
 switch(entityType) {
 case 'member':
@@ -1620,7 +1597,6 @@ if (jsIndex !== -1) database.jalsa[jsIndex] = {...database.jalsa[jsIndex], ...up
 break;
 }
 }
-
 function openDeleteConfirm(entityType, itemId, itemName) {
 currentEntityType = entityType;
 currentItemId = itemId;
@@ -1628,11 +1604,9 @@ currentItemName = itemName;
 document.getElementById('deleteItemName').textContent = `${getEntityLabel(entityType)} "${itemName}"`;
 document.getElementById('deleteModal').style.display = 'flex';
 }
-
 function closeDeleteModal() {
 document.getElementById('deleteModal').style.display = 'none';
 }
-
 function confirmDelete() {
 deleteItem(currentEntityType, currentItemId);
 showToast(`"${currentItemName}" removed successfully!`, 'success');
@@ -1640,7 +1614,6 @@ closeDeleteModal();
 loadPageData(currentPage);
 saveData();
 }
-
 function deleteItem(entityType, id) {
 switch(entityType) {
 case 'member': database.members = database.members.filter(m => m.id !== id); break;
@@ -1653,7 +1626,6 @@ case 'atfal': database.atfal = database.atfal.filter(a => a.id !== id); break;
 case 'jalsa': database.jalsa = database.jalsa.filter(j => j.id !== id); break;
 }
 }
-
 // ==================== SEARCH FUNCTIONALITY ====================
 function performSearch() {
 const searchTerm = document.getElementById('globalSearch').value.toLowerCase().trim();
@@ -1661,7 +1633,7 @@ if (searchTerm.length < 2) return;
 const results = [];
 // Search members
 database.members.forEach(member => {
-if (member.name.toLowerCase().includes(searchTerm) || 
+if (member.name.toLowerCase().includes(searchTerm) ||
 member.region.toLowerCase().includes(searchTerm) ||
 member.department.toLowerCase().includes(searchTerm)) {
 results.push({
@@ -1674,7 +1646,7 @@ action: () => showPage('members')
 });
 // Search departments
 database.departments.forEach(dept => {
-if (dept.name.toLowerCase().includes(searchTerm) || 
+if (dept.name.toLowerCase().includes(searchTerm) ||
 dept.head.toLowerCase().includes(searchTerm)) {
 results.push({
 type: 'Department',
@@ -1686,7 +1658,7 @@ action: () => showPage('departments')
 });
 // Search regions
 database.regions.forEach(region => {
-if (region.name.toLowerCase().includes(searchTerm) || 
+if (region.name.toLowerCase().includes(searchTerm) ||
 region.president.toLowerCase().includes(searchTerm)) {
 results.push({
 type: 'Region',
@@ -1698,7 +1670,7 @@ action: () => showPage('regions')
 });
 // Search mosques
 database.mosques.forEach(mosque => {
-if (mosque.name.toLowerCase().includes(searchTerm) || 
+if (mosque.name.toLowerCase().includes(searchTerm) ||
 mosque.location.toLowerCase().includes(searchTerm) ||
 mosque.region.toLowerCase().includes(searchTerm)) {
 results.push({
@@ -1716,36 +1688,30 @@ showToast(`Found ${results.length} result(s) for "${searchTerm}"`, 'success');
 showToast(`No results found for "${searchTerm}"`, 'error');
 }
 }
-
 // ==================== MODAL FUNCTIONS ====================
 function closeFaxModal() {
 document.getElementById('faxModal').style.display = 'none';
 }
-
 document.getElementById('faxTab').onclick = () => {
 document.getElementById('faxDate').textContent = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
 document.getElementById('faxModal').style.display = 'flex';
 };
-
 document.getElementById('faxForm').onsubmit = function(e) {
 e.preventDefault();
 showToast("Fax successfully sent to Beloved Huzoor (aba) in London Markaz. May Allah grant you His nearness. Amin ❤️", 'success');
 document.getElementById('faxModal').style.display = 'none';
 document.getElementById('faxMessage').value = '';
 }
-
 function toggleUserMenu() {
 const dropdown = document.querySelector('.user-dropdown');
 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
 }
-
 function logout() {
 showToast('Logged out successfully!', 'success');
 setTimeout(() => {
 window.location.reload();
 }, 1000);
 }
-
 // Close modals when clicking outside
 window.onclick = function(event) {
 if (event.target === document.getElementById('crudModal')) closeModal();
@@ -1755,7 +1721,32 @@ if (!event.target.closest('.user-profile')) {
 document.querySelector('.user-dropdown').style.display = 'none';
 }
 };
+// ==================== DEPARTMENT NAVIGATION ====================
+// Navigate to department index.html within the same tab
+function enterDepartment(deptId, deptName) {
+// Extract first letter of each word and convert to lowercase
+const prefix = deptName.split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .toLowerCase();
+const url = `${prefix}-index.html`;
+showToast(`Entering ${deptName}...`, 'success');
+// Navigate within the same tab
+window.location.href = url;
+}
 
+// Navigate to department admin.html within the same tab
+function manageDepartment(deptId, deptName) {
+// Extract first letter of each word and convert to lowercase
+const prefix = deptName.split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .toLowerCase();
+const url = `${prefix}-admin.html`;
+showToast(`Managing ${deptName}...`, 'success');
+// Navigate within the same tab
+window.location.href = url;
+}
 // ==================== TOAST NOTIFICATION ====================
 function showToast(message, type = 'success') {
 const toast = document.getElementById('toast');
@@ -1767,7 +1758,6 @@ setTimeout(() => {
 toast.style.display = 'none';
 }, 3000);
 }
-
 // ==================== SETTINGS ====================
 function saveSettings() {
 const settings = {
@@ -1783,16 +1773,13 @@ jalsaReminders: document.getElementById('jalsaReminders').checked
 localStorage.setItem('acmsSettings', JSON.stringify(settings));
 showToast('Settings saved successfully!', 'success');
 }
-
 // ==================== REPORTS ====================
 function generateReport(type) {
 showToast(`Generating ${type} report... This will create a comprehensive PDF with all relevant data.`, 'success');
 }
-
 function exportData(type) {
 showToast(`Exporting ${type} data to Excel/CSV format...`, 'success');
 }
-
 // ==================== STATS UPDATE ====================
 function updateStats() {
 document.getElementById('totalMembersStat').textContent = database.members.length;
@@ -1800,7 +1787,6 @@ document.getElementById('totalDepartmentsStat').textContent = database.departmen
 document.getElementById('totalMajalisStat').textContent = database.regions.reduce((sum, r) => sum + r.majalis, 0);
 document.getElementById('totalMosquesStat').textContent = database.mosques.length;
 }
-
 // ==================== INITIALIZE CHARTS ====================
 function initCharts() {
 // 1. Total Members
@@ -1949,14 +1935,13 @@ beginAtZero: true
 }
 });
 }
-
 // ==================== PAGE INITIALIZATION ====================
 window.onload = function() {
 // Set current date
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB', { 
-day: 'numeric', 
-month: 'long', 
-year: 'numeric' 
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB', {
+day: 'numeric',
+month: 'long',
+year: 'numeric'
 });
 // Load data
 loadData();
