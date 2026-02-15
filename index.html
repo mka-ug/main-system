@@ -1292,28 +1292,41 @@ tbody.appendChild(row);
 }
 
 function loadDepartmentsTable() {
-const tbody = document.getElementById('departmentsTableBody');
-tbody.innerHTML = '';
-database.departments.forEach(dept => {
-const row = document.createElement('tr');
-row.className = 'clickable-row';
-row.innerHTML = `
-<td>${dept.name}</td>
-<td><span class="badge badge-active">Active</span></td>
-<td class="item-actions">
-<button class="item-btn btn-edit" onclick="manageDepartment('${dept.id}', '${dept.name.replace(/'/g, "\\'")}')">
-<i class="fas fa-cog"></i> Manage Department
-</button>
-<button class="item-btn btn-edit" onclick="openEditModal('department', '${dept.id}')">
-<i class="fas fa-edit"></i> Edit Department
-</button>
-<button class="item-btn btn-remove" onclick="openDeleteConfirm('department', '${dept.id}', '${dept.name}')">
-<i class="fas fa-trash"></i> Remove Department
-</button>
-</td>
-`;
-tbody.appendChild(row);
-});
+    const tbody = document.getElementById('departmentsTableBody');
+    tbody.innerHTML = '';
+    database.departments.forEach(dept => {
+        const row = document.createElement('tr');
+        row.className = 'clickable-row';
+        
+        // Determine badge class based on status
+        let badgeClass = 'badge-active';
+        let statusText = 'Active';
+        
+        if (dept.status === 'pending') {
+            badgeClass = 'badge-pending';
+            statusText = 'Pending';
+        } else if (dept.status === 'inactive') {
+            badgeClass = 'badge';
+            statusText = 'Inactive';
+        }
+        
+        row.innerHTML = `
+            <td>${dept.name}</td>
+            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+            <td class="item-actions">
+                <button class="item-btn btn-edit" onclick="manageDepartment('${dept.id}', '${dept.name.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-cog"></i> Manage Department
+                </button>
+                <button class="item-btn btn-edit" onclick="openEditModal('department', '${dept.id}')">
+                    <i class="fas fa-edit"></i> Edit Department
+                </button>
+                <button class="item-btn btn-remove" onclick="openDeleteConfirm('department', '${dept.id}', '${dept.name}')">
+                    <i class="fas fa-trash"></i> Remove Department
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
 }
 
 function loadRegionsTable() {
