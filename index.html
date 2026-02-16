@@ -240,6 +240,333 @@
       border-color: var(--deep-green);
     }
     
+    /* Region Card Styles */
+    .region-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border-left: 4px solid var(--gold);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .region-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    }
+
+    .region-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, transparent 50%, rgba(184, 155, 94, 0.1) 50%);
+      border-radius: 0 0 0 100px;
+    }
+
+    .region-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .region-header h3 {
+      color: var(--deep-green);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .region-header h3 i {
+      color: var(--gold);
+      font-size: 1.6rem;
+    }
+
+    .region-badge {
+      background: var(--deep-green);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .region-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .region-stat-item {
+      background: rgba(184, 155, 94, 0.08);
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    .region-stat-item:hover {
+      background: rgba(184, 155, 94, 0.15);
+    }
+
+    .region-stat-item i {
+      color: var(--gold);
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+    }
+
+    .region-stat-item .stat-label {
+      font-size: 0.75rem;
+      color: #777;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .region-stat-item .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--deep-green);
+      font-family: 'Cormorant Garamond', serif;
+      line-height: 1.2;
+    }
+
+    .region-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-view {
+      padding: 12px 24px;
+      background: var(--gold);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-view:hover {
+      background: #a6894f;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(184, 155, 94, 0.3);
+    }
+
+    .btn-view i {
+      font-size: 1rem;
+    }
+
+    .btn-view-sub {
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--deep-green);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-view-sub:hover {
+      background: rgba(184, 155, 94, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .region-description {
+      color: #555;
+      line-height: 1.6;
+      margin: 15px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sub-regions preview */
+    .sub-regions-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 15px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sub-region-tag {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: var(--deep-green);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sub-region-tag i {
+      color: var(--gold);
+      font-size: 0.75rem;
+    }
+
+    .sub-region-tag.more {
+      background: var(--deep-green);
+      color: white;
+      border: none;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--deep-green);
+      color: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-header h2 i {
+      color: var(--gold);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 5px;
+      transition: transform 0.3s;
+    }
+
+    .modal-close:hover {
+      transform: scale(1.1);
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .sub-region-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .sub-region-item:hover {
+      background: rgba(184, 155, 94, 0.05);
+    }
+
+    .sub-region-item:last-child {
+      border-bottom: none;
+    }
+
+    .sub-region-info h4 {
+      color: var(--deep-green);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+    }
+
+    .sub-region-info p {
+      color: #666;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-region-stats {
+      display: flex;
+      gap: 15px;
+    }
+
+    .sub-region-stat {
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .sub-region-stat .stat-number {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--deep-green);
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .sub-region-stat .stat-label {
+      font-size: 0.7rem;
+      color: #777;
+      text-transform: uppercase;
+    }
+    
     /* Utilities */
     .page { display:none; }
     .page.active { display:block; }
@@ -277,6 +604,29 @@
       .department-stats {
         flex-direction: column;
         gap: 10px;
+      }
+      .region-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .region-actions {
+        flex-direction: column;
+      }
+      
+      .btn-view, .btn-view-sub {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .sub-region-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      
+      .sub-region-stats {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -397,7 +747,6 @@
         <p>All MKA departments and committees</p>
       </div>
       <div id="departmentsContainer" style="padding:20px;">
-        <!-- Status filters will be added here dynamically -->
         <div id="departmentsList" style="text-align:center; padding:40px;">
           <i class="fas fa-spinner fa-spin fa-3x"></i>
           <p style="margin-top:15px; color:#777;">Loading departments...</p>
@@ -805,33 +1154,240 @@
       const container = document.getElementById('regionsList');
       container.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading regions...`;
 
-      const { data, error } = await supabaseClient
-        .from('regions')
-        .select('*')
-        .order('created_at', { ascending: true });
+      try {
+        // Fetch regions
+        const { data: regions, error: regionsError } = await supabaseClient
+          .from('regions')
+          .select('*')
+          .order('name', { ascending: true });
 
-      if (error) {
-        container.innerHTML = `<div style="color:red;">Failed to load regions.</div>`;
-        console.error(error);
-        return;
+        if (regionsError) throw regionsError;
+
+        if (!regions || regions.length === 0) {
+          container.innerHTML = `<div style="padding:40px; text-align:center; color:#777;">No regions found.</div>`;
+          return;
+        }
+
+        // For each region, get sub-regions and member counts
+        const regionsWithDetails = await Promise.all(
+          regions.map(async (region) => {
+            // Get sub-regions for this region
+            const { data: subRegions, error: subError } = await supabaseClient
+              .from('sub_regions')
+              .select('*')
+              .eq('region_id', region.id);
+
+            if (subError) console.error('Error fetching sub-regions:', subError);
+
+            // Get member count for this region (from khuddam table)
+            const { count: memberCount, error: memberError } = await supabaseClient
+              .from('khuddam')
+              .select('*', { count: 'exact', head: true })
+              .eq('region', region.name);
+
+            // Get member count for each sub-region
+            const subRegionsWithCounts = subRegions ? await Promise.all(
+              subRegions.map(async (sub) => {
+                const { count } = await supabaseClient
+                  .from('khuddam')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('sub_region', sub.name);
+                
+                return {
+                  ...sub,
+                  member_count: count || 0
+                };
+              })
+            ) : [];
+
+            return {
+              ...region,
+              sub_regions: subRegionsWithCounts || [],
+              sub_regions_count: subRegions?.length || 0,
+              member_count: memberCount || 0
+            };
+          })
+        );
+
+        // Display regions
+        const regionsHTML = regionsWithDetails.map(region => {
+          // Get first 3 sub-regions for preview
+          const previewSubRegions = region.sub_regions.slice(0, 3);
+          const remainingCount = region.sub_regions_count - 3;
+
+          return `
+            <div class="region-card" data-region-id="${region.id}">
+              <div class="region-header">
+                <h3>
+                  <i class="fas fa-map-marked-alt"></i>
+                  ${region.name}
+                </h3>
+                <span class="region-badge">${region.code || 'REG'}</span>
+              </div>
+
+              <div class="region-description">
+                ${region.description || 'No description available'}
+              </div>
+
+              <div class="region-stats">
+                <div class="region-stat-item">
+                  <i class="fas fa-map"></i>
+                  <div class="stat-label">Sub-Regions</div>
+                  <div class="stat-value">${region.sub_regions_count}</div>
+                </div>
+                <div class="region-stat-item">
+                  <i class="fas fa-users"></i>
+                  <div class="stat-label">Members</div>
+                  <div class="stat-value">${region.member_count}</div>
+                </div>
+                <div class="region-stat-item">
+                  <i class="fas fa-mosque"></i>
+                  <div class="stat-label">Mosques</div>
+                  <div class="stat-value">${region.mosque_count || 0}</div>
+                </div>
+              </div>
+
+              ${region.sub_regions_count > 0 ? `
+                <div class="sub-regions-preview">
+                  ${previewSubRegions.map(sub => `
+                    <span class="sub-region-tag">
+                      <i class="fas fa-circle"></i>
+                      ${sub.name}
+                    </span>
+                  `).join('')}
+                  ${remainingCount > 0 ? `
+                    <span class="sub-region-tag more">
+                      +${remainingCount} more
+                    </span>
+                  ` : ''}
+                </div>
+              ` : ''}
+
+              <div class="region-actions">
+                <button class="btn-view-sub" onclick="viewSubRegions('${region.id}', '${region.name}')">
+                  <i class="fas fa-map"></i> View Sub-Regions (${region.sub_regions_count})
+                </button>
+                <a href="region-${region.name.toLowerCase().replace(/\s+/g, '-')}.html?id=${region.id}" class="btn-view">
+                  <i class="fas fa-eye"></i> View Region
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = regionsHTML;
+
+        // Add modal HTML if it doesn't exist
+        if (!document.getElementById('subRegionsModal')) {
+          const modalHTML = `
+            <div id="subRegionsModal" class="modal">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h2><i class="fas fa-map"></i> <span id="modalRegionName"></span></h2>
+                  <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="subRegionsList">
+                  <!-- Sub-regions will be loaded here -->
+                </div>
+              </div>
+            </div>
+          `;
+          document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+      } catch (error) {
+        console.error('Error loading regions:', error);
+        container.innerHTML = `<div style="color:red; padding:20px;">Failed to load regions. Please try again.</div>`;
       }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div>No regions found.</div>`;
-        return;
-      }
-
-      container.innerHTML = data.map(region => `
-        <div style="padding:15px; border-bottom:1px solid var(--border); text-align:left;">
-          <h3 style="color:var(--deep-green); font-family:'Cormorant Garamond',serif;">
-            ${region.name}
-          </h3>
-          <p style="color:#555; margin-top:5px;">
-            ${region.description || 'No description'}
-          </p>
-        </div>
-      `).join('');
     }
+
+    // Function to view sub-regions in modal
+    async function viewSubRegions(regionId, regionName) {
+      const modal = document.getElementById('subRegionsModal');
+      const modalRegionName = document.getElementById('modalRegionName');
+      const subRegionsList = document.getElementById('subRegionsList');
+
+      modalRegionName.textContent = `${regionName} - Sub-Regions`;
+      subRegionsList.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading sub-regions...</div>';
+      
+      modal.classList.add('active');
+
+      try {
+        // Fetch sub-regions for this region
+        const { data: subRegions, error } = await supabaseClient
+          .from('sub_regions')
+          .select('*')
+          .eq('region_id', regionId)
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+
+        if (!subRegions || subRegions.length === 0) {
+          subRegionsList.innerHTML = '<div style="text-align:center; padding:40px; color:#777;">No sub-regions found.</div>';
+          return;
+        }
+
+        // Get member counts for each sub-region
+        const subRegionsWithCounts = await Promise.all(
+          subRegions.map(async (sub) => {
+            const { count } = await supabaseClient
+              .from('khuddam')
+              .select('*', { count: 'exact', head: true })
+              .eq('sub_region', sub.name);
+
+            // Get mosque count (if you have a mosques table with sub_region field)
+            const { count: mosqueCount } = await supabaseClient
+              .from('mosques')
+              .select('*', { count: 'exact', head: true })
+              .eq('sub_region', sub.name);
+
+            return {
+              ...sub,
+              member_count: count || 0,
+              mosque_count: mosqueCount || 0
+            };
+          })
+        );
+
+        subRegionsList.innerHTML = subRegionsWithCounts.map(sub => `
+          <div class="sub-region-item">
+            <div class="sub-region-info">
+              <h4>${sub.name}</h4>
+              <p>
+                <i class="fas fa-map-pin"></i> ${sub.location || 'Location not specified'}
+              </p>
+            </div>
+            <div class="sub-region-stats">
+              <div class="sub-region-stat">
+                <div class="stat-number">${sub.member_count}</div>
+                <div class="stat-label">Members</div>
+              </div>
+              <div class="sub-region-stat">
+                <div class="stat-number">${sub.mosque_count}</div>
+                <div class="stat-label">Mosques</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error loading sub-regions:', error);
+        subRegionsList.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Failed to load sub-regions.</div>';
+      }
+    }
+
+    // Function to close modal
+    function closeModal() {
+      document.getElementById('subRegionsModal').classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('subRegionsModal');
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
 
     async function loadMosques() {
       const container = document.getElementById('mosquesList');
