@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<title>Umoomi Security · Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,637 +16,615 @@
   padding: 0;
 }
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f5f7fa;
-  color: #333;
-  line-height: 1.6;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background: #f4f6f9;
   height: 100vh;
-  overflow-x: hidden;
-}
-
-/* HEADER */
-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  background: #2c3e50;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 0 25px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  color: white;
-}
-
-header h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-header small {
-  display: block;
-  color: #bdc3c7;
-  font-size: 0.85rem;
-  margin-top: 2px;
-}
-
-/* LAYOUT */
-.layout {
-  display: flex;
-  margin-top: 70px;
-  height: calc(100vh - 70px);
+  overflow: hidden;
   padding: 20px;
-  gap: 20px;
 }
 
-/* SIDEBAR */
+/* HEADER - FROZEN - Umoomi design */
+header {
+  background: linear-gradient(145deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 20px 28px;
+  border-radius: 28px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  box-shadow: 0 8px 18px rgba(0,20,30,0.06);
+  flex-shrink: 0;
+}
+header i {
+  font-size: 3rem;
+  color: #1e3c5c;
+  filter: drop-shadow(0 2px 4px rgba(0,60,120,0.2));
+}
+header h2 {
+  font-weight: 600;
+  color: #0b2a41;
+  letter-spacing: -0.02em;
+}
+header small {
+  color: #3a5e7a;
+  font-size: 0.9rem;
+}
+
+/* LAYOUT - FROZEN SIDEBAR */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  height: calc(100vh - 140px);
+  overflow: hidden;
+}
+
+/* SIDEBAR - FROZEN - Umoomi design */
 aside {
-  position: fixed;
-  top: 70px;
-  left: 20px;
-  width: 260px;
-  bottom: 20px;
-  background: white;
-  border-radius: 12px;
-  padding: 20px 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 16px 10px;
+  box-shadow: 0 12px 28px rgba(0,20,40,0.06);
+  backdrop-filter: blur(2px);
+  height: fit-content;
+  max-height: calc(100vh - 140px);
   overflow-y: auto;
-  z-index: 900;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
 }
-
 aside button {
   width: 100%;
   border: none;
   background: none;
   padding: 14px 18px;
-  border-radius: 8px;
+  border-radius: 18px;
   text-align: left;
   cursor: pointer;
   margin-bottom: 8px;
-  font-size: 1.05rem;
-  color: #2c3e50;
+  font-size: 1rem;
+  color: #1e3b5c;
   font-weight: 500;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
+  gap: 14px;
+  transition: all 0.15s ease;
 }
-
-aside button i {
-  width: 24px;
-  margin-right: 12px;
-  font-size: 1.1rem;
-}
-
+aside button i { width: 22px; font-size: 1.2rem; }
 aside button.active,
 aside button:hover {
-  background: #3498db;
+  background: #1d4d7c;
   color: white;
+  box-shadow: 0 6px 14px rgba(27,85,140,0.3);
   transform: translateX(4px);
 }
-
 aside hr {
   margin: 15px 0;
   border: 0;
   height: 1px;
-  background: #eee;
+  background: linear-gradient(90deg, transparent, #c4d7ec, transparent);
 }
 
-/* MAIN CONTENT */
+/* MAIN PANEL - SCROLLABLE */
 main {
-  margin-left: 290px;
-  flex: 1;
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 24px 28px;
+  box-shadow: 0 16px 30px rgba(0,10,30,0.04);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Quick stats cards - ABOVE content */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+.stat-card {
+  background: linear-gradient(145deg, #1e3f5f, #2c5a85);
+  color: white;
+  padding: 20px 14px;
+  border-radius: 26px;
+  text-align: center;
+  box-shadow: 0 16px 28px -8px #1d3f5e60;
+}
+.stat-card i {
+  font-size: 2rem;
+  opacity: 0.95;
+  margin-bottom: 8px;
+}
+.stat-card .stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+.stat-card .stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Section styling */
 .section {
   display: none;
   animation: fadeIn 0.4s ease;
 }
-
 .section.active {
   display: block;
 }
-
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* SEARCH BAR */
+.section h3 {
+  color: #1e3f5f;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section h3 i {
+  color: #1d4d7c;
+}
+
+/* SEARCH BAR - Umoomi style */
 .search-bar {
   margin-bottom: 20px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-
 .search-bar input {
   flex: 1;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 14px 18px;
+  border: 1px solid #c4d7ec;
+  border-radius: 40px;
   font-size: 1rem;
+  background: #f4faff;
+  outline: none;
+  min-width: 250px;
+}
+.search-bar input:focus {
+  border-color: #1d4d7c;
+  box-shadow: 0 0 0 3px rgba(29, 77, 124, 0.1);
 }
 
-/* TABLE STYLING */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-th {
-  background: #3498db;
-  color: white;
-  font-weight: 600;
-  text-align: left;
-  padding: 14px 16px;
-  position: sticky;
-  top: 0;
-}
-
-td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
-}
-
-tr:hover {
-  background: #f8fbff;
-}
-
-tr:last-child td {
-  border-bottom: none;
-}
-
-/* BUTTON STYLES */
+/* BUTTON STYLES - Umoomi design */
 button {
-  padding: 8px 16px;
+  padding: 12px 22px;
   border: none;
-  border-radius: 6px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 0.95rem;
+  gap: 10px;
+  background: #f6faff;
+  color: #1e3f5f;
+  border: 1px solid rgba(148, 184, 218, 0.3);
+  box-shadow: 0 2px 8px rgba(0,20,50,0.04);
 }
-
+button i { font-size: 1.1rem; }
 button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(0,30,60,0.12);
 }
-
 .success {
-  background: #27ae60;
-  color: white;
+  background: #e3f0fd;
+  border-color: #9ac7ff;
+  color: #1d4d7c;
 }
-
+.success:hover {
+  background: #1d4d7c;
+  color: white;
+  border-color: #1d4d7c;
+}
 .warning {
+  background: #fff0cf;
+  border-color: #ffd98c;
+  color: #b45b0a;
+}
+.warning:hover {
   background: #f39c12;
   color: white;
+  border-color: #f39c12;
 }
-
 .danger {
+  background: #fdecea;
+  border-color: #ffb5b5;
+  color: #c63737;
+}
+.danger:hover {
   background: #e74c3c;
   color: white;
+  border-color: #e74c3c;
 }
-
 .btn {
-  background: #3498db;
+  background: #e3f0fd;
+  border-color: #9ac7ff;
+  color: #1d4d7c;
+}
+.btn:hover {
+  background: #1d4d7c;
   color: white;
 }
-
 .pdf-btn {
+  background: #efe6fd;
+  border-color: #ccb5ff;
+  color: #6b4e9e;
+}
+.pdf-btn:hover {
   background: #8e44ad;
   color: white;
+  border-color: #8e44ad;
+}
+
+/* TABLE STYLING - Enhanced */
+.table-container {
+  background: #f8faff;
+  border-radius: 24px;
+  padding: 4px;
+  margin-top: 20px;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 20px;
+  overflow: hidden;
+}
+th {
+  background: #1d4d7c;
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+}
+td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(148, 184, 218, 0.2);
+  background: white;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+tr:hover td {
+  background: #f0f7ff;
 }
 
 /* FORM ELEMENTS */
 input, select {
   width: 100%;
-  padding: 12px 15px;
+  padding: 14px 18px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid #c4d7ec;
+  border-radius: 40px;
   font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-input:focus, select:focus {
+  background: #f4faff;
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  transition: all 0.15s ease;
+}
+input:focus, select:focus {
+  border-color: #1d4d7c;
+  box-shadow: 0 0 0 3px rgba(29, 77, 124, 0.1);
 }
 
-/* MODAL STYLING */
+/* MODAL STYLING - Umoomi design */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(8, 25, 45, 0.5);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
-
 .modal.hidden {
   display: none;
 }
-
 .modal-box {
   background: white;
-  padding: 25px;
-  border-radius: 12px;
+  padding: 30px;
+  border-radius: 42px;
   width: 90%;
-  max-width: 480px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  max-width: 500px;
+  box-shadow: 0 40px 60px rgba(0,15,40,0.4);
+  border: 1px solid #b9d4f0;
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
 }
-
 .modal-box h3 {
   margin-bottom: 20px;
-  color: #2c3e50;
-  font-size: 1.6rem;
+  color: #113853;
+  font-size: 1.8rem;
   text-align: center;
 }
-
 .modal-close {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: #eee;
+  top: 20px;
+  right: 25px;
+  background: #f4faff;
   border: none;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   cursor: pointer;
-}
-
-.modal-close:hover {
-  background: #ff6b6b;
-  color: white;
-}
-
-/* ===== LANDSCAPE ID CARD - PRINT/PDF READY ===== */
-#idCardModal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #1e3f5f;
+}
+.modal-close:hover {
+  background: #fdecea;
+  color: #c63737;
+}
+
+/* ID CARD MODAL - Enhanced */
+#idCardModal {
   z-index: 3000;
-  padding: 20px;
 }
-
-#idCardModal.hidden {
-  display: none;
-}
-
 #idCardContainer {
   width: 600px;
   perspective: 1200px;
-  margin: 0 auto;
 }
-
 #idCardInner {
   width: 100%;
-  height: 360px;
+  height: 380px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  border-radius: 20px;
 }
-
 #idCard.flipped #idCardInner {
   transform: rotateY(180deg);
 }
-
 .id-card-side {
   position: absolute;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 20px;
+  padding: 25px;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   display: flex;
-  overflow: hidden;
+  flex-direction: column;
 }
-
 #idCardFront {
   background: white;
   color: #2c3e50;
-  border: 1px solid #ccc;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  border: 1px solid #c4d7ec;
 }
-
 #idCardFront .header {
   text-align: center;
-  margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #3498db;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #1d4d7c;
 }
-
 #idCardFront .header h2 {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1a3a6c;
-  letter-spacing: 0.5px;
+  color: #1e3f5f;
 }
-
-#idCardFront .header p {
-  font-size: 0.95rem;
-  color: #7f8c8d;
-  margin-top: 4px;
-}
-
 .id-card-content {
   display: flex;
   gap: 24px;
+  flex: 1;
 }
-
 .id-photo {
   flex: 0 0 120px;
 }
-
 .id-photo img {
   width: 110px;
   height: 140px;
   object-fit: cover;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #f9f9f9;
+  border: 2px solid #c4d7ec;
+  border-radius: 12px;
+  background: #f4faff;
 }
-
 .id-details {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 8px;
 }
-
 .id-details p {
-  margin: 6px 0;
-  font-size: 1.05rem;
-  line-height: 1.4;
+  margin: 0;
+  font-size: 1rem;
 }
-
 .id-details label {
   display: inline-block;
-  width: 100px;
+  width: 70px;
   color: #7f8c8d;
   font-weight: 600;
 }
-
 .id-details span {
   font-weight: 600;
-  color: #2c3e50;
+  color: #1e3f5f;
 }
-
 .expiry-highlight {
   background: #fff8e1;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
   font-weight: 600;
   color: #e67e22;
   display: inline-block;
-  margin-top: 4px;
 }
-
 #idCardBack {
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f8faff, #eef2f7);
   color: #2c3e50;
   transform: rotateY(180deg);
-  border: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
+  border: 1px solid #c4d7ec;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
-
-#idCardBack .back-header {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #3498db;
-  margin-bottom: 20px;
-}
-
 .qr-display {
   width: 180px;
   height: 180px;
   background: white;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  border: 2px solid #c4d7ec;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin: 20px auto;
 }
-
-.qr-display img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-#idCardBack .id-text {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #7f8c8d;
-  letter-spacing: 0.5px;
-}
-
 .card-actions {
   display: flex;
   justify-content: center;
   gap: 16px;
   margin-top: 24px;
 }
-
 .card-btn {
-  padding: 10px 22px;
-  background: #3498db;
+  padding: 12px 24px;
+  background: #1d4d7c;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 40px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  font-size: 1rem;
+  transition: all 0.15s ease;
 }
-
 .card-btn:hover {
-  background: #2980b9;
+  background: #113753;
+  transform: translateY(-2px);
 }
-
 .card-btn.close {
-  background: #e74c3c;
+  background: #fdecea;
+  color: #c63737;
 }
-
 .card-btn.close:hover {
-  background: #c0392b;
+  background: #e74c3c;
+  color: white;
 }
 
 /* PRINT PREVIEW MODAL */
-#printPreviewModal {
-  z-index: 4000;
+#printPreviewModal .modal-box {
+  max-width: 1200px;
+  width: 95%;
 }
-
 #printPreviewHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
 }
-
 #printPreviewControls {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
-
 #printPreviewSearch {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  min-width: 200px;
+  padding: 12px 18px;
+  border: 1px solid #c4d7ec;
+  border-radius: 40px;
+  background: #f4faff;
+  min-width: 250px;
 }
-
 #printCardsContainer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
+  gap: 20px;
+  padding: 10px 0;
 }
 
 /* PRINT CARD STYLE */
 .print-id-card {
   background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border: 1px solid #c4d7ec;
+  border-radius: 16px;
+  padding: 15px;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
   page-break-inside: avoid;
   break-inside: avoid;
-  position: relative;
 }
-
 .print-id-card.back {
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f8faff, #f0f4fa);
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-
 .print-id-card .header {
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #3498db;
+  border-bottom: 2px solid #1d4d7c;
 }
-
 .print-id-card .header h4 {
   font-size: 1rem;
-  color: #1a3a6c;
-  margin: 0;
+  color: #1e3f5f;
   font-weight: 700;
 }
-
 .print-id-card .content {
   display: flex;
   gap: 12px;
 }
-
 .print-id-card .photo {
-  flex: 0 0 80px;
+  flex: 0 0 70px;
 }
-
 .print-id-card .photo img {
-  width: 75px;
-  height: 100px;
+  width: 65px;
+  height: 85px;
   object-fit: cover;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid #c4d7ec;
+  border-radius: 8px;
 }
-
 .print-id-card .details {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
-
 .print-id-card .details p {
-  margin: 4px 0;
-  line-height: 1.3;
+  margin: 3px 0;
 }
-
 .print-id-card .details label {
   display: inline-block;
-  width: 70px;
+  width: 60px;
   color: #7f8c8d;
   font-weight: 600;
 }
-
 .print-id-card .details span {
   font-weight: 600;
-  color: #2c3e50;
+  color: #1e3f5f;
 }
-
 .print-id-card .expiry {
   background: #fff8e1;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: 12px;
   font-weight: 600;
   color: #e67e22;
-  display: inline-block;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
-
 .print-id-card .qr-display {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   background: white;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  border: 1px solid #c4d7ec;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 15px;
-}
-
-.print-id-card .qr-display img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.print-id-card .id-text {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #7f8c8d;
+  margin: 15px auto;
 }
 
 /* PRINT STYLES */
@@ -669,7 +647,7 @@ input:focus, select:focus {
   }
   @page {
     size: A4;
-    margin: 0;
+    margin: 5mm;
   }
 }
 
@@ -678,73 +656,62 @@ input:focus, select:focus {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(142, 68, 173, 0.3);
+  border: 3px solid rgba(142, 68, 173, 0.2);
   border-radius: 50%;
   border-top-color: #8e44ad;
   animation: spin 1s linear infinite;
   margin-right: 8px;
 }
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .layout {
-    flex-direction: column;
-    margin-top: 70px;
-    height: calc(100vh - 70px);
-    padding: 15px;
-  }
-  
-  aside {
-    position: relative;
-    top: 0;
-    width: 100%;
-    height: auto;
-    max-height: 300px;
-    margin-bottom: 20px;
-  }
-  
-  main {
-    margin-left: 0;
-  }
-  
-  #idCardContainer {
-    width: 95vw;
-  }
-  
-  #idCardInner {
-    height: auto;
-    min-height: 300px;
-  }
+/* Custom scrollbar */
+main::-webkit-scrollbar,
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+main::-webkit-scrollbar-track,
+aside::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+main::-webkit-scrollbar-thumb,
+aside::-webkit-scrollbar-thumb {
+  background: #1e3f5f;
+  border-radius: 10px;
+}
+main::-webkit-scrollbar-thumb:hover,
+aside::-webkit-scrollbar-thumb:hover {
+  background: #2c5a85;
 }
 </style>
 </head>
 <body>
 
+<!-- HEADER - FROZEN - Umoomi design -->
 <header>
-  <i class="fas fa-user-shield fa-2x"></i>
+  <i class="fas fa-shield-halved"></i>
   <div>
-    <h2>Admin Dashboard</h2>
-    <small>System Management Panel</small>
+    <h2>Umoomi Security · Admin Panel</h2>
+    <small>Ahmadiyya Muslim Community Uganda · system management</small>
   </div>
 </header>
 
 <div class="layout">
+  <!-- SIDEBAR - FROZEN - Umoomi design -->
   <aside>
-    <button onclick="location.href='u-index.html'"><i class="fas fa-chart-line"></i> Dashboard</button>
-    <button onclick="location.href='members.html'"><i class="fas fa-users"></i> Members</button>
-    <button onclick="location.href='scanner.html'"><i class="fas fa-qrcode"></i> Scanner</button>
-    <button onclick="location.href='regions.html'"><i class="fas fa-map-marker-alt"></i> Regions</button>
-    <button onclick="location.href='scan-logs.html'"><i class="fas fa-history"></i> Logs</button>
+    <button onclick="location.href='department_bb485cd8-db88-46dc-b9c5-e196fa963f5e.html'"><i class="fas fa-chart-pie"></i> Dashboard</button>
+    <button onclick="location.href='u-members.html'"><i class="fas fa-people-group"></i> Members</button>
+    <button onclick="location.href='u-scanner.html'"><i class="fas fa-qrcode"></i> Scanner</button>
+    <button onclick="location.href='u-regions.html'"><i class="fas fa-map-locations"></i> Regions</button>
+    <button onclick="location.href='u-scan-logs.html'"><i class="fas fa-clock-rotate-left"></i> Logs</button>
     <button class="active"><i class="fas fa-user-shield"></i> Admin</button>
-    <button onclick="location.href='settings.html'"><i class="fas fa-cog"></i> Settings</button>
+    <button onclick="location.href='u-settings.html'"><i class="fas fa-gear"></i> Settings</button>
 
     <hr>
 
-    <button class="active" onclick="showSection('membersSection',this)">
+    <button onclick="showSection('membersSection',this)">
       <i class="fas fa-id-card"></i> Edit Members
     </button>
     <button onclick="showSection('regionsSection',this)">
@@ -753,10 +720,33 @@ input:focus, select:focus {
   </aside>
 
   <main>
+    <!-- Quick stats cards - ABOVE content -->
+    <div class="quick-stats" id="quickStats">
+      <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <div class="stat-number" id="statMembers">0</div>
+        <div class="stat-label">Total Members</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-map-locations"></i>
+        <div class="stat-number" id="statRegions">0</div>
+        <div class="stat-label">Regions</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-id-card"></i>
+        <div class="stat-number" id="statWithID">0</div>
+        <div class="stat-label">With ID Cards</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-clock"></i>
+        <div class="stat-number" id="statExpiring">0</div>
+        <div class="stat-label">Expiring Soon</div>
+      </div>
+    </div>
+
+    <!-- MEMBERS SECTION -->
     <div id="membersSection" class="section active">
-      <h3 style="margin-bottom: 20px; color: #2c3e50;">
-        <i class="fas fa-users"></i> Members Management
-      </h3>
+      <h3><i class="fas fa-people-group"></i> Members Management</h3>
       
       <!-- Search and Action Buttons -->
       <div class="search-bar">
@@ -765,44 +755,50 @@ input:focus, select:focus {
           <i class="fas fa-plus"></i> Add Member
         </button>
         <button class="pdf-btn" onclick="exportIDCardsToPDF()" id="pdfButton">
-          <i class="fas fa-file-pdf"></i> Export as PDF
+          <i class="fas fa-file-pdf"></i> Export PDF
         </button>
-        <button class="btn" onclick="printAllIDCards()" style="background: #27ae60;">
-          <i class="fas fa-print"></i> Print ID Cards
+        <button class="btn" onclick="printAllIDCards()" style="background: #e3f0fd;">
+          <i class="fas fa-print"></i> Print Cards
         </button>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Region</th>
-            <th>Position</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="membersTable"></tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Region</th>
+              <th>Position</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membersTable"></tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- REGIONS SECTION -->
     <div id="regionsSection" class="section">
-      <h3 style="margin-bottom: 20px; color: #2c3e50;">
-        <i class="fas fa-map-marker-alt"></i> Regions Management
-      </h3>
-      <button class="success" onclick="openRegionModal()">
-        <i class="fas fa-plus"></i> Add Region
-      </button>
+      <h3><i class="fas fa-map-locations"></i> Regions Management</h3>
+      
+      <div style="margin-bottom: 20px;">
+        <button class="success" onclick="openRegionModal()">
+          <i class="fas fa-plus"></i> Add Region
+        </button>
+      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="regionsTable"></tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="regionsTable"></tbody>
+        </table>
+      </div>
     </div>
   </main>
 </div>
@@ -817,8 +813,10 @@ input:focus, select:focus {
     <select id="m_region"></select>
     <input id="m_position" placeholder="Position">
     <input id="m_expiry_date" type="date" placeholder="Expiry Date">
-    <button class="btn" onclick="saveMember()">Save</button>
-    <button onclick="closeMemberModal()">Cancel</button>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button class="success" onclick="saveMember()" style="flex: 1;">Save</button>
+      <button onclick="closeMemberModal()" style="flex: 1;">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -828,8 +826,10 @@ input:focus, select:focus {
     <button class="modal-close" onclick="closeRegionModal()">&times;</button>
     <h3 id="regionTitle">Add Region</h3>
     <input id="r_name" placeholder="Region Name (required)">
-    <button class="btn" onclick="saveRegion()">Save</button>
-    <button onclick="closeRegionModal()">Cancel</button>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button class="success" onclick="saveRegion()" style="flex: 1;">Save</button>
+      <button onclick="closeRegionModal()" style="flex: 1;">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -841,7 +841,6 @@ input:focus, select:focus {
         <div class="id-card-side" id="idCardFront">
           <div class="header">
             <h2>AHMADIYYA MUSLIM COMMUNITY</h2>
-            <p>Official Identity Card</p>
           </div>
           <div class="id-card-content">
             <div class="id-photo">
@@ -861,11 +860,11 @@ input:focus, select:focus {
         </div>
 
         <div class="id-card-side" id="idCardBack">
-          <div class="back-header">Scan for Verification</div>
+          <div style="font-weight: 600; color: #1d4d7c; font-size: 1.2rem; margin-bottom: 10px;">Scan for Verification</div>
           <div class="qr-display">
-            <img id="qrCode" src="" alt="QR Code">
+            <img id="qrCode" src="" alt="QR Code" style="width: 160px; height: 160px;">
           </div>
-          <div class="id-text" id="cardIDBack">ID: MEMBER-000</div>
+          <div style="font-weight: 600; color: #7f8c8d;" id="cardIDBack">ID: MEMBER-000</div>
         </div>
       </div>
     </div>
@@ -883,20 +882,20 @@ input:focus, select:focus {
 
 <!-- PRINT PREVIEW MODAL -->
 <div class="modal hidden" id="printPreviewModal" onclick="closePrintPreview()">
-  <div style="width: 90%; max-width: 1000px; background: white; border-radius: 12px; padding: 25px; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 1200px;">
     <div id="printPreviewHeader">
-      <h3 style="color: #2c3e50;"><i class="fas fa-id-card"></i> Print Preview – ID Cards</h3>
+      <h3 style="color: #1e3f5f;"><i class="fas fa-id-card"></i> Print Preview – ID Cards</h3>
       <div id="printPreviewControls">
-        <select id="printMode" onchange="updatePrintPreview()">
+        <select id="printMode" onchange="updatePrintPreview()" style="width: auto; padding: 8px 15px;">
           <option value="front">Front Only</option>
           <option value="both" selected>Front & Back</option>
         </select>
         <input type="text" id="printPreviewSearch" placeholder="Search members..." oninput="filterPrintPreview()">
-        <button class="btn" onclick="window.print()" style="background: #27ae60;">
+        <button class="btn" onclick="window.print()" style="background: #27ae60; color: white;">
           <i class="fas fa-print"></i> Print Now
         </button>
         <button class="pdf-btn" onclick="exportPreviewToPDF()">
-          <i class="fas fa-file-pdf"></i> Save as PDF
+          <i class="fas fa-file-pdf"></i> Save PDF
         </button>
         <button onclick="closePrintPreview()">Close</button>
       </div>
@@ -916,6 +915,26 @@ let regionsMap = {};
 let editingMember = null;
 let editingRegion = null;
 let allMembers = [];
+
+function updateQuickStats() {
+  const totalMembers = allMembers.length;
+  const totalRegions = Object.keys(regionsMap).length;
+  const withID = allMembers.filter(m => m.member_id && m.member_id.length > 0).length;
+  
+  // Count members expiring within 30 days
+  const today = new Date();
+  const thirtyDaysFromNow = new Date(today.setDate(today.getDate() + 30));
+  const expiring = allMembers.filter(m => {
+    if (!m.expiry_date) return false;
+    const expiry = new Date(m.expiry_date);
+    return expiry <= thirtyDaysFromNow && expiry >= new Date();
+  }).length;
+  
+  document.getElementById('statMembers').textContent = totalMembers;
+  document.getElementById('statRegions').textContent = totalRegions;
+  document.getElementById('statWithID').textContent = withID;
+  document.getElementById('statExpiring').textContent = expiring;
+}
 
 function showSection(id, btn) {
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
@@ -949,7 +968,7 @@ async function loadRegions() {
     regionsMap = {};
     data.forEach(r => regionsMap[r.id] = r.name);
     
-    regionsTable.innerHTML = data.map(r => `
+    document.getElementById("regionsTable").innerHTML = data.map(r => `
       <tr>
         <td>${escapeHtml(r.name)}</td>
         <td>
@@ -959,8 +978,11 @@ async function loadRegions() {
       </tr>
     `).join("");
     
-    m_region.innerHTML = `<option value="">-- Select Region --</option>` + 
+    const regionSelect = document.getElementById("m_region");
+    regionSelect.innerHTML = `<option value="">-- Select Region --</option>` + 
       data.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+    
+    updateQuickStats();
   } catch (error) {
     console.error("Error loading regions:", error);
     alert("Failed to load regions: " + error.message);
@@ -970,11 +992,12 @@ async function loadRegions() {
 // Load Members
 async function loadMembers() {
   try {
-    const { data, error } = await db.from("umoomi_members").select("*");
+    const { data, error } = await db.from("members").select("*");
     if (error) throw error;
     
     allMembers = data;
     renderMembersTable();
+    updateQuickStats();
   } catch (error) {
     console.error("Error loading members:", error);
     alert("Failed to load members: " + error.message);
@@ -987,7 +1010,7 @@ function renderMembersTable(searchTerm = '') {
     m.member_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  membersTable.innerHTML = filtered.length ? filtered.map(m => `
+  document.getElementById("membersTable").innerHTML = filtered.length ? filtered.map(m => `
     <tr>
       <td>${escapeHtml(m.member_id)}</td>
       <td>${escapeHtml(m.full_name)}</td>
@@ -1023,27 +1046,27 @@ function filterMembers() {
 // Member Modal
 function openMemberModal() {
   editingMember = null;
-  memberTitle.innerText = "Add Member";
-  m_member_id.value = "";
-  m_full_name.value = "";
-  m_region.value = "";
-  m_position.value = "";
-  m_expiry_date.value = "";
-  memberModal.classList.remove("hidden");
+  document.getElementById("memberTitle").innerText = "Add Member";
+  document.getElementById("m_member_id").value = "";
+  document.getElementById("m_full_name").value = "";
+  document.getElementById("m_region").value = "";
+  document.getElementById("m_position").value = "";
+  document.getElementById("m_expiry_date").value = "";
+  document.getElementById("memberModal").classList.remove("hidden");
 }
 
 function closeMemberModal() {
-  memberModal.classList.add("hidden");
+  document.getElementById("memberModal").classList.add("hidden");
 }
 
 async function saveMember() {
   const payload = {
-    member_id: m_member_id.value.trim(),
-    full_name: m_full_name.value.trim(),
-    region_id: m_region.value,
-    position: m_position.value.trim() || null,
+    member_id: document.getElementById("m_member_id").value.trim(),
+    full_name: document.getElementById("m_full_name").value.trim(),
+    region_id: document.getElementById("m_region").value,
+    position: document.getElementById("m_position").value.trim() || null,
     department: "General",
-    expiry_date: m_expiry_date.value || null
+    expiry_date: document.getElementById("m_expiry_date").value || null
   };
   
   if (!payload.member_id || !payload.full_name || !payload.region_id) {
@@ -1053,9 +1076,9 @@ async function saveMember() {
   
   try {
     if (editingMember) {
-      await db.from("umoomi_members").update(payload).eq("id", editingMember);
+      await db.from("members").update(payload).eq("id", editingMember);
     } else {
-      await db.from("umoomi_members").insert(payload);
+      await db.from("members").insert(payload);
     }
     closeMemberModal();
     loadMembers();
@@ -1067,36 +1090,36 @@ async function saveMember() {
 
 async function editMember(id) {
   editingMember = id;
-  const { data } = await db.from("umoomi_members").select("*").eq("id", id).single();
-  m_member_id.value = data.member_id;
-  m_full_name.value = data.full_name;
-  m_region.value = data.region_id;
-  m_position.value = data.position || "";
-  m_expiry_date.value = data.expiry_date ? data.expiry_date.split('T')[0] : "";
-  memberTitle.innerText = "Edit Member";
-  memberModal.classList.remove("hidden");
+  const { data } = await db.from("members").select("*").eq("id", id).single();
+  document.getElementById("m_member_id").value = data.member_id;
+  document.getElementById("m_full_name").value = data.full_name;
+  document.getElementById("m_region").value = data.region_id;
+  document.getElementById("m_position").value = data.position || "";
+  document.getElementById("m_expiry_date").value = data.expiry_date ? data.expiry_date.split('T')[0] : "";
+  document.getElementById("memberTitle").innerText = "Edit Member";
+  document.getElementById("memberModal").classList.remove("hidden");
 }
 
 async function deleteMember(id) {
   if (!confirm("Delete this member?")) return;
-  await db.from("umoomi_members").delete().eq("id", id);
+  await db.from("members").delete().eq("id", id);
   loadMembers();
 }
 
 // Region Modal
 function openRegionModal() {
   editingRegion = null;
-  regionTitle.innerText = "Add Region";
-  r_name.value = "";
-  regionModal.classList.remove("hidden");
+  document.getElementById("regionTitle").innerText = "Add Region";
+  document.getElementById("r_name").value = "";
+  document.getElementById("regionModal").classList.remove("hidden");
 }
 
 function closeRegionModal() {
-  regionModal.classList.add("hidden");
+  document.getElementById("regionModal").classList.add("hidden");
 }
 
 async function saveRegion() {
-  const name = r_name.value.trim();
+  const name = document.getElementById("r_name").value.trim();
   if (!name) { alert("Region name is required"); return; }
   
   try {
@@ -1116,9 +1139,9 @@ async function saveRegion() {
 
 function editRegion(id, name) {
   editingRegion = id;
-  r_name.value = name;
-  regionTitle.innerText = "Edit Region";
-  regionModal.classList.remove("hidden");
+  document.getElementById("r_name").value = name;
+  document.getElementById("regionTitle").innerText = "Edit Region";
+  document.getElementById("regionModal").classList.remove("hidden");
 }
 
 async function deleteRegion(id) {
@@ -1159,7 +1182,6 @@ async function printAllIDCards() {
       return;
     }
     
-    // Store current state for filtering
     window.printMembers = [...allMembers];
     updatePrintPreview();
     document.getElementById("printPreviewModal").classList.remove("hidden");
@@ -1221,11 +1243,11 @@ function createPrintCard(member, side) {
     `;
   } else {
     card.innerHTML = `
-      <div class="back-header">Scan for Verification</div>
+      <div style="font-weight:600; color:#1d4d7c; margin-bottom:10px;">Scan for Verification</div>
       <div class="qr-display">
-        <img src="https://quickchart.io/qr?text=${encodeURIComponent(member.member_id)}&size=120" alt="QR Code">
+        <img src="https://quickchart.io/qr?text=${encodeURIComponent(member.member_id)}&size=100" alt="QR Code" style="width:90px;height:90px;">
       </div>
-      <div class="id-text">ID: ${escapeHtml(member.member_id)}</div>
+      <div style="font-weight:600; color:#7f8c8d;">ID: ${escapeHtml(member.member_id)}</div>
     `;
   }
   
@@ -1258,7 +1280,7 @@ async function exportIDCardsToPDF() {
     pdfContainer.id = "pdf-temp-container";
     pdfContainer.style.position = "absolute";
     pdfContainer.style.left = "-9999px";
-    pdfContainer.style.width = "210mm"; // A4 width
+    pdfContainer.style.width = "210mm";
     pdfContainer.style.padding = "5mm";
     pdfContainer.style.display = "grid";
     pdfContainer.style.gridTemplateColumns = "repeat(2, 1fr)";
@@ -1282,7 +1304,8 @@ async function exportIDCardsToPDF() {
     const canvas = await html2canvas(pdfContainer, {
       scale: 2,
       useCORS: true,
-      allowTaint: true
+      allowTaint: true,
+      backgroundColor: '#ffffff'
     });
     
     const imgData = canvas.toDataURL('image/png');
@@ -1304,7 +1327,6 @@ async function exportIDCardsToPDF() {
       heightLeft -= pageHeight;
     }
     
-    // Save PDF
     pdf.save(`AMC_ID_Cards_${new Date().toISOString().slice(0, 10)}.pdf`);
     
     // Clean up
@@ -1322,40 +1344,40 @@ function createPDFCard(member, side) {
   const card = document.createElement("div");
   card.style.width = "90mm";
   card.style.height = "55mm";
-  card.style.border = "1px solid #ccc";
-  card.style.borderRadius = "4px";
+  card.style.border = "1px solid #c4d7ec";
+  card.style.borderRadius = "8px";
   card.style.padding = "4px";
-  card.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+  card.style.fontFamily = "'Segoe UI', sans-serif";
   card.style.fontSize = "8px";
   card.style.overflow = "hidden";
+  card.style.backgroundColor = side === 'front' ? 'white' : '#f8faff';
   
   if (side === 'front') {
     card.innerHTML = `
-      <div style="text-align:center; margin-bottom:4px; padding-bottom:3px; border-bottom:1px solid #3498db;">
-        <div style="font-weight:700; color:#1a3a6c; font-size:9px;">AHMADIYYA MUSLIM COMMUNITY</div>
+      <div style="text-align:center; margin-bottom:4px; padding-bottom:3px; border-bottom:2px solid #1d4d7c;">
+        <div style="font-weight:700; color:#1e3f5f; font-size:9px;">AHMADIYYA MUSLIM COMMUNITY</div>
       </div>
       <div style="display:flex; gap:5px;">
         <div style="flex:0 0 30px;">
-          <img src="https://via.placeholder.com/30x40?text=NP" alt="Photo" style="width:30px;height:40px;object-fit:cover;border:1px solid #ddd;border-radius:2px;">
+          <img src="https://via.placeholder.com/30x40?text=NP" alt="Photo" style="width:30px;height:40px;object-fit:cover;border:1px solid #c4d7ec;border-radius:4px;">
         </div>
         <div style="flex:1; font-size:7px;">
           <p style="margin:1px 0;"><span style="color:#7f8c8d;width:35px;display:inline-block;">Name:</span> ${escapeHtml(member.full_name)}</p>
           <p style="margin:1px 0;"><span style="color:#7f8c8d;width:35px;display:inline-block;">ID:</span> ${escapeHtml(member.member_id)}</p>
           <p style="margin:1px 0;"><span style="color:#7f8c8d;width:35px;display:inline-block;">Position:</span> ${escapeHtml(member.position || 'Member')}</p>
-          <p style="margin:1px 0;"><span style="color:#7f8c8d;width:35px;display:inline-block;">Dept:</span> ${escapeHtml(member.department || 'General')}</p>
           <p style="margin:1px 0;">
             <span style="color:#7f8c8d;width:35px;display:inline-block;">Expires:</span> 
-            <span style="background:#fff8e1;padding:1px 3px;border-radius:2px;font-weight:600;color:#e67e22;font-size:6px;">${member.expiry_date ? formatDate(member.expiry_date) : 'N/A'}</span>
+            <span style="background:#fff8e1;padding:1px 3px;border-radius:2px;font-weight:600;color:#e67e22;">${member.expiry_date ? formatDate(member.expiry_date) : 'N/A'}</span>
           </p>
         </div>
       </div>
     `;
   } else {
     card.innerHTML = `
-      <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#2c3e50;">
-        <div style="font-weight:600; color:#3498db; font-size:9px; margin-bottom:8px;">Scan for Verification</div>
-        <div style="width:40px; height:40px; background:white; border:1px solid #eee; border-radius:4px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
-          <img src="https://quickchart.io/qr?text=${encodeURIComponent(member.member_id)}&size=40" alt="QR" style="width:36px;height:36px;object-fit:contain;">
+      <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+        <div style="font-weight:600; color:#1d4d7c; font-size:9px; margin-bottom:8px;">Scan for Verification</div>
+        <div style="width:40px; height:40px; background:white; border:1px solid #c4d7ec; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+          <img src="https://quickchart.io/qr?text=${encodeURIComponent(member.member_id)}&size=40" alt="QR" style="width:36px;height:36px;">
         </div>
         <div style="font-weight:600; color:#7f8c8d; font-size:8px;">ID: ${escapeHtml(member.member_id)}</div>
       </div>
@@ -1374,7 +1396,10 @@ async function exportPreviewToPDF() {
   }
   
   const { jsPDF } = window.jspdf;
-  const canvas = await html2canvas(container, { scale: 2 });
+  const canvas = await html2canvas(container, { 
+    scale: 2,
+    backgroundColor: '#ffffff'
+  });
   const imgData = canvas.toDataURL('image/png');
   
   const pdf = new jsPDF('p', 'mm', 'a4');
