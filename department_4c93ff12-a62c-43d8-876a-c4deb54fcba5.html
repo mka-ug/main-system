@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khuddam-ul-Ahmadiyya • Members Management</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+:root {
+--khuddam-blue: #1e3a5f;
+--khuddam-gold: #c6a43c;
+--cream: #FAF9F5;
+--border: #E8E2D9;
+--success: #28a745;
+--danger: #dc3545;
+--warning: #ffc107;
+--info: #17a2b8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Libre Franklin', sans-serif; background: var(--cream); color: #2d2d2d; min-height: 100vh; }
+/* Header */
+header { background: var(--khuddam-blue); border-bottom: 3px solid var(--khuddam-gold); color: white; padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+.header-container { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; gap: 15px; }
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+.logo i { color: var(--khuddam-gold); }
+.logo small { font-size: 0.75rem; color: var(--khuddam-gold); letter-spacing: 1px; display: block; margin-top: -3px; }
+/* Action Buttons */
+.action-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.region-selector { background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 30px; display: flex; align-items: center; gap: 10px; }
+.region-selector select { background: white; color: var(--khuddam-blue); border: none; padding: 8px 15px; border-radius: 20px; font-weight: 600; min-width: 180px; cursor: pointer; }
+.btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.95rem; }
+.btn-primary { background: var(--khuddam-gold); color: var(--khuddam-blue); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #218838; transform: translateY(-2px); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #c82333; transform: translateY(-2px); }
+.btn-info { background: var(--info); color: white; }
+.btn-info:hover { background: #138496; transform: translateY(-2px); }
+.btn-refresh { background: rgba(255,255,255,0.2); color: white; }
+.btn-refresh:hover { background: rgba(255,255,255,0.3); }
+/* Main Content */
+.main { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+/* Welcome Banner */
+.welcome-banner { background: linear-gradient(135deg, var(--khuddam-blue) 0%, #0a1f33 100%); color: white; padding: 25px 30px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.welcome-banner h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; display: flex; align-items: center; gap: 10px; }
+.welcome-banner h1 i { color: var(--khuddam-gold); }
+.region-badge { background: var(--khuddam-gold); color: var(--khuddam-blue); padding: 8px 20px; border-radius: 40px; font-size: 1rem; font-weight: 700; }
+.last-updated { font-size: 0.85rem; opacity: 0.9; margin-top: 3px; }
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+.stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid var(--khuddam-gold); }
+.stat-card .stat-icon { font-size: 1.5rem; color: var(--khuddam-gold); margin-bottom: 10px; }
+.stat-card .stat-label { font-size: 0.85rem; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--khuddam-blue); font-family: 'Cormorant Garamond', serif; }
+.stat-card .stat-sub { font-size: 0.75rem; color: #999; margin-top: 3px; }
+/* Section Card */
+.section-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+.section-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--khuddam-blue); display: flex; align-items: center; gap: 10px; }
+.section-header h2 i { color: var(--khuddam-gold); }
+/* Filters */
+.filters-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 10px; }
+.filter-group { flex: 1; min-width: 180px; }
+.filter-group label { display: block; font-size: 0.8rem; color: #777; margin-bottom: 5px; }
+.filter-group select, .filter-group input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
+/* Table */
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { background: var(--khuddam-blue); color: white; font-weight: 600; padding: 12px 15px; text-align: left; font-size: 0.85rem; text-transform: uppercase; }
+td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+tr:hover { background: rgba(198, 164, 60, 0.05); }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+.status-badge.active { background: #e8f5e9; color: #2e7d32; }
+.status-badge.inactive { background: #ffebee; color: #c62828; }
+.status-badge.suspended { background: #fff3e0; color: #ef6c00; }
+.age-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.age-badge.khuddam { background: #d1e7ff; color: #0d47a1; }
+.age-badge.atfal { background: #fff9c4; color: #f57f17; }
+.age-badge.ansar { background: #e3f2fd; color: #1565c0; }
+.action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; margin-right: 5px; }
+.action-btn.view { background: var(--khuddam-blue); color: white; }
+.action-btn.edit { background: var(--khuddam-gold); color: var(--khuddam-blue); }
+.action-btn.delete { background: var(--danger); color: white; }
+.action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+/* Loading */
+.loading-spinner { text-align: center; padding: 40px; }
+.loading-spinner i { font-size: 2.5rem; color: var(--khuddam-gold); animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* Modal */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal.show { display: flex; }
+.modal-content { background: white; border-radius: 15px; width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: white; z-index: 10; }
+.modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--khuddam-blue); display: flex; align-items: center; gap: 10px; }
+.modal-header h3 i { color: var(--khuddam-gold); }
+.modal-close { background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; }
+.modal-close:hover { color: var(--danger); }
+.modal-body { padding: 25px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 25px; border-top: 1px solid var(--border); position: sticky; bottom: 0; background: white; }
+/* Form */
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.form-group { margin-bottom: 5px; }
+.form-group.full-width { grid-column: span 2; }
+.form-group label { display: block; font-weight: 600; color: var(--khuddam-blue); margin-bottom: 6px; font-size: 0.9rem; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: border-color 0.3s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--khuddam-gold); }
+.form-group input[readonly] { background: #e9ecef; cursor: not-allowed; }
+/* Responsive */
+@media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; } }
+@media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .header-container { flex-direction: column; align-items: stretch; } .welcome-banner { flex-direction: column; text-align: center; } .action-bar { justify-content: center; } .modal-content { max-width: 95%; } }
+</style>
+</head>
+<body>
+<!-- Header -->
+<header>
+<div class="header-container">
+<a href="#" class="logo">
+<i class="fas fa-users"></i>
+<div>
+KHUDAM-UL-AHMADIYYA
+<small>MEMBERS MANAGEMENT SYSTEM</small>
+</div>
+</a>
+<div class="action-bar">
+<div class="region-selector">
+<i class="fas fa-map-marker-alt" style="color: var(--khuddam-gold);"></i>
+<select id="regionSelector" onchange="switchRegion()">
+<option value="">All Regions</option>
+</select>
+</div>
+<button class="btn btn-refresh" onclick="loadAllData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+<button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-user-plus"></i> Add Member</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<div class="main">
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+<div>
+<h1><i class="fas fa-address-book"></i> Member Directory</h1>
+<div class="last-updated" id="lastUpdated">Loading...</div>
+</div>
+<div class="region-badge" id="currentRegionDisplay">All Regions</div>
+</div>
+<!-- Stats Grid -->
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+<div class="stat-label">Khuddam (15-40)</div>
+<div class="stat-value" id="statKhuddam">0</div>
+<div class="stat-sub">15 to 40 years</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-child"></i></div>
+<div class="stat-label">Atfal (7-14)</div>
+<div class="stat-value" id="statAtfal">0</div>
+<div class="stat-sub">7 to 14 years</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-people-group"></i></div>
+<div class="stat-label">Total Members</div>
+<div class="stat-value" id="statTotal">0</div>
+<div class="stat-sub">All ages</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon"><i class="fas fa-map-pin"></i></div>
+<div class="stat-label">Active Subregions</div>
+<div class="stat-value" id="statSubregions">0</div>
+<div class="stat-sub">With members</div>
+</div>
+</div>
+<!-- Members Section -->
+<div class="section-card">
+<div class="section-header">
+<h2><i class="fas fa-list"></i> All Members</h2>
+</div>
+<div class="filters-bar">
+<div class="filter-group">
+<label>Search</label>
+<input type="text" id="memberSearch" placeholder="Name, ID, phone..." oninput="filterMembers()">
+</div>
+<div class="filter-group">
+<label>Region</label>
+<select id="regionFilter" onchange="filterMembers()">
+<option value="all">All Regions</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Subregion</label>
+<select id="subregionFilter" onchange="filterMembers()">
+<option value="all">All Subregions</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Age Group</label>
+<select id="ageGroupFilter" onchange="filterMembers()">
+<option value="all">All Age Groups</option>
+<option value="khuddam">Khuddam (15-40)</option>
+<option value="atfal">Atfal (7-14)</option>
+<option value="ansar">Ansar (40+)</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Status</label>
+<select id="statusFilter" onchange="filterMembers()">
+<option value="all">All Status</option>
+<option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+<option value="Suspended">Suspended</option>
+</select>
+</div>
+</div>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th>Member ID</th>
+<th>Full Name</th>
+<th>Age</th>
+<th>Age Group</th>
+<th>Subregion</th>
+<th>Region</th>
+<th>Phone</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="membersTable">
+<tr><td colspan="9" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading members...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Add/Edit Member Modal -->
+<div id="memberModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 id="modalTitle"><i class="fas fa-user-plus"></i> Register New Member</h3>
+<button class="modal-close" onclick="closeModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="enrollmentForm" class="form-grid">
+<input type="hidden" id="memberDbId">
+<div class="form-group full-width">
+<label>Full Name *</label>
+<input type="text" id="fullName" required placeholder="Enter full name">
+</div>
+<div class="form-group">
+<label>Member ID</label>
+<input type="text" id="memberId" readonly placeholder="Generated automatically" style="background:#e9ecef;cursor:not-allowed;">
+</div>
+<div class="form-group">
+<label>Date of Birth *</label>
+<input type="date" id="dob" required onchange="previewAgeGroup()">
+</div>
+<div class="form-group">
+<label>Phone</label>
+<input type="tel" id="phone" placeholder="e.g., 0772 123456">
+</div>
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="email" placeholder="name@example.com">
+</div>
+<div class="form-group">
+<label>Region *</label>
+<select id="region" required onchange="loadSubregionsForForm()">
+<option value="">Select Region</option>
+</select>
+</div>
+<div class="form-group">
+<label>Subregion (Qiadat) *</label>
+<select id="qiadatId" required>
+<option value="">Select Subregion</option>
+</select>
+</div>
+<div class="form-group">
+<label>Department</label>
+<select id="departmentId">
+<option value="">Select Department</option>
+</select>
+</div>
+<div class="form-group">
+<label>Position</label>
+<input type="text" id="position" placeholder="e.g., Muhtamim">
+</div>
+<div class="form-group">
+<label>Status</label>
+<select id="status">
+<option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+<option value="Suspended">Suspended</option>
+</select>
+</div>
+<div class="form-group full-width">
+<label>Address</label>
+<textarea id="address" rows="2" placeholder="Physical address"></textarea>
+</div>
+<div class="form-group full-width">
+<label>Age Group (Auto)</label>
+<div style="background:#f8f9fa;padding:12px;border-radius:8px;border-left:4px solid var(--khuddam-gold);display:flex;align-items:center;gap:12px;">
+<i class="fas fa-user" id="ageIcon" style="color:var(--khuddam-gold);font-size:1.3rem;"></i>
+<div>
+<div style="font-weight:600;" id="ageGroupDisplay">Not calculated</div>
+<div style="font-size:0.85rem;color:#666;" id="ageDescDisplay">Enter DOB to calculate</div>
+</div>
+</div>
+</div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn" style="background:#6c757d;color:white;" onclick="closeModal()">Cancel</button>
+<button class="btn btn-success" onclick="submitMemberForm()"><i class="fas fa-save"></i> Save Member</button>
+</div>
+</div>
+</div>
+<script>
+(function() {
+'use strict';
+// === CONFIG ===
+const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+db: { schema: 'public' },
+auth: { persistSession: false }
+});
+// State
+let allMembers = [], allSubregions = [], allRegions = [], allDepartments = [];
+let currentRegionId = null;
+let regionNames = {}, subregionNames = {}, departmentNames = {};
+// === HELPERS ===
+function escapeHtml(str) {
+if (!str) return str;
+return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function calculateAge(dob) {
+if (!dob) return null;
+const birth = new Date(dob), today = new Date();
+let age = today.getFullYear() - birth.getFullYear();
+const m = today.getMonth() - birth.getMonth();
+if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+return age;
+}
+function getAgeGroup(age) {
+if (age === null) return 'unknown';
+if (age >= 15 && age < 40) return 'khuddam';
+if (age >= 7 && age < 15) return 'atfal';
+if (age >= 40) return 'ansar';
+return 'child';
+}
+function getAgeGroupLabel(group) {
+return { 'khuddam': 'Khuddam', 'atfal': 'Atfal', 'ansar': 'Ansar', 'child': 'Child', 'unknown': 'Unknown' }[group] || 'Unknown';
+}
+function showNotification(msg, type = 'success') {
+const Toast = Swal.mixin({
+toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); }
+});
+Toast.fire({ icon: type, title: msg });
+}
+// === LOAD DROPDOWNS ===
+async function loadDropdownData() {
+try {
+// Regions
+const { data: regions, error: regErr } = await supabase.from('regions').select('id, name').eq('active', true).order('name');
+if (regErr) throw regErr;
+allRegions = regions || [];
+regionNames = {};
+let selOpts = '<option value="">All Regions (National)</option>';
+let formOpts = '<option value="">Select Region</option>';
+let filterOpts = '<option value="all">All Regions</option>';
+allRegions.forEach(r => {
+regionNames[r.id] = r.name;
+selOpts += `<option value="${r.id}">${escapeHtml(r.name)}</option>`;
+formOpts += `<option value="${r.id}">${escapeHtml(r.name)}</option>`;
+filterOpts += `<option value="${r.id}">${escapeHtml(r.name)}</option>`;
+});
+document.getElementById('regionSelector').innerHTML = selOpts;
+document.getElementById('region').innerHTML = formOpts;
+document.getElementById('regionFilter').innerHTML = filterOpts;
+// Departments
+const { data: depts, error: deptErr } = await supabase.from('departments').select('id, name').order('name');
+if (deptErr) throw deptErr;
+allDepartments = depts || [];
+departmentNames = {};
+let deptOpts = '<option value="">Select Department</option>';
+allDepartments.forEach(d => {
+departmentNames[d.id] = d.name;
+deptOpts += `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
+});
+document.getElementById('departmentId').innerHTML = deptOpts;
+// Subregions
+const { data: subs, error: subErr } = await supabase.from('subregions').select('id, region_id, name').eq('active', true).order('name');
+if (subErr) throw subErr;
+allSubregions = subs || [];
+subregionNames = {};
+allSubregions.forEach(s => subregionNames[s.id] = s.name);
+} catch (err) {
+console.error('Dropdown load error:', err);
+showNotification('Could not load dropdown data', 'error');
+}
+}
+// === LOAD SUBREGIONS FOR FORM ===
+async function loadSubregionsForForm() {
+const regionId = document.getElementById('region').value;
+const qiadatSel = document.getElementById('qiadatId');
+qiadatSel.innerHTML = '<option value="">Select Subregion</option>';
+if (!regionId) { qiadatSel.disabled = true; return; }
+qiadatSel.disabled = false;
+try {
+const { data, error } = await supabase.from('subregions').select('id, name').eq('region_id', regionId).order('name');
+if (error) throw error;
+let opts = '<option value="">Select Subregion</option>';
+(data || []).forEach(s => { opts += `<option value="${s.id}">${escapeHtml(s.name)}</option>`; });
+qiadatSel.innerHTML = opts;
+} catch (e) { console.error('Subregion load error:', e); }
+}
+// === LOAD SUBREGIONS FOR FILTER ===
+async function loadSubregionsForFilter(regionId) {
+const filter = document.getElementById('subregionFilter');
+filter.innerHTML = '<option value="all">All Subregions</option>';
+if (!regionId || regionId === 'all') return;
+try {
+const { data, error } = await supabase.from('subregions').select('id, name').eq('region_id', regionId).order('name');
+if (error) throw error;
+(data || []).forEach(s => { filter.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)}</option>`; });
+} catch (e) { console.error('Subregion filter load error:', e); }
+}
+// === ENRICH MEMBER WITH NAMES ===
+async function enrichMember(m) {
+const enriched = { ...m };
+if (m.region_id && regionNames[m.region_id]) enriched.region_name = regionNames[m.region_id];
+else if (m.region_id) {
+try { const { data } = await supabase.from('regions').select('name').eq('id', m.region_id).single();
+if (data) { enriched.region_name = data.name; regionNames[m.region_id] = data.name; }
+} catch(e) { enriched.region_name = m.region || '-'; }
+} else enriched.region_name = m.region || '-';
+const subId = m.qiadat_id || m.subregion_id;
+if (subId && subregionNames[subId]) enriched.subregion_name = subregionNames[subId];
+else if (subId) {
+try { const { data } = await supabase.from('subregions').select('name').eq('id', subId).single();
+if (data) { enriched.subregion_name = data.name; subregionNames[subId] = data.name; }
+} catch(e) { enriched.subregion_name = '-'; }
+} else enriched.subregion_name = '-';
+if (m.department_id && departmentNames[m.department_id]) enriched.department_name = departmentNames[m.department_id];
+else if (m.department_id) {
+try { const { data } = await supabase.from('departments').select('name').eq('id', m.department_id).single();
+if (data) { enriched.department_name = data.name; departmentNames[m.department_id] = data.name; }
+} catch(e) { enriched.department_name = '-'; }
+} else enriched.department_name = '-';
+return enriched;
+}
+// === LOAD MEMBERS ===
+async function loadMembers() {
+const tbody = document.getElementById('membersTable');
+tbody.innerHTML = `<tr><td colspan="9" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading...</td></tr>`;
+try {
+let query = supabase.from('members').select('*').order('full_name', { ascending: true });
+if (currentRegionId) {
+query = query.eq('region_id', currentRegionId);
+const region = allRegions.find(r => r.id === currentRegionId);
+document.getElementById('currentRegionDisplay').textContent = region?.name || 'Selected Region';
+} else document.getElementById('currentRegionDisplay').textContent = 'All Regions';
+const { data: members, error } = await query;
+if (error) {
+console.error('Members query error:', error);
+const fallback = await supabase.from('members').select('*').order('full_name');
+allMembers = (fallback.data || []).map(m => enrichMember(m));
+} else {
+const enriched = [];
+for (const m of (members || [])) enriched.push(await enrichMember(m));
+allMembers = enriched;
+}
+updateStats();
+updateFilterDropdowns();
+renderMembers(allMembers);
+document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+} catch (err) {
+console.error('Load members error:', err);
+tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Error: ${err.message}</td></tr>`;
+showNotification('Failed to load members', 'error');
+}
+}
+// === MAIN LOAD ===
+async function loadAllData() {
+try {
+await loadDropdownData();
+await loadMembers();
+} catch (e) {
+console.error('LoadAllData error:', e);
+showNotification('Failed to load data: ' + e.message, 'error');
+}
+}
+// === REGION SWITCH ===
+async function switchRegion() {
+currentRegionId = document.getElementById('regionSelector').value || null;
+await loadAllData();
+}
+// === UPDATE STATS ===
+function updateStats() {
+let k = 0, a = 0, ans = 0;
+allMembers.forEach(m => {
+const age = calculateAge(m.dob);
+if (age !== null) {
+if (age >= 15 && age < 40) k++;
+else if (age >= 7 && age < 15) a++;
+else if (age >= 40) ans++;
+}
+});
+document.getElementById('statKhuddam').textContent = k;
+document.getElementById('statAtfal').textContent = a;
+document.getElementById('statTotal').textContent = allMembers.length;
+const activeSubs = new Set(allMembers.map(m => m.qiadat_id || m.subregion_id).filter(Boolean)).size;
+document.getElementById('statSubregions').textContent = activeSubs;
+}
+// === UPDATE FILTER DROPDOWNS ===
+function updateFilterDropdowns() {
+// Region filter
+const regionFilter = document.getElementById('regionFilter');
+const regionOpts = ['<option value="all">All Regions</option>'];
+const usedRegions = new Set(allMembers.map(m => m.region_id).filter(Boolean));
+usedRegions.forEach(id => { const name = regionNames[id] || 'Unknown'; regionOpts.push(`<option value="${id}">${escapeHtml(name)}</option>`); });
+regionFilter.innerHTML = regionOpts.join('');
+// Subregion filter
+const subregionFilter = document.getElementById('subregionFilter');
+const subregionOpts = ['<option value="all">All Subregions</option>'];
+const usedSubs = new Set(allMembers.map(m => m.qiadat_id || m.subregion_id).filter(Boolean));
+usedSubs.forEach(id => { const name = subregionNames[id] || 'Unknown'; subregionOpts.push(`<option value="${id}">${escapeHtml(name)}</option>`); });
+subregionFilter.innerHTML = subregionOpts.join('');
+}
+// === FILTER MEMBERS (FULLY FUNCTIONAL) ===
+function filterMembers() {
+const search = document.getElementById('memberSearch').value.toLowerCase();
+const regionFilter = document.getElementById('regionFilter').value;
+const subregionFilter = document.getElementById('subregionFilter').value;
+const ageGroupFilter = document.getElementById('ageGroupFilter').value;
+const statusFilter = document.getElementById('statusFilter').value;
+// Load subregions when region changes
+if (regionFilter && regionFilter !== 'all') {
+loadSubregionsForFilter(regionFilter);
+}
+const filtered = allMembers.filter(m => {
+// Search filter
+const matchSearch = !search || (m.full_name?.toLowerCase().includes(search) || m.member_id?.toLowerCase().includes(search) || m.phone?.includes(search));
+// Region filter
+const matchRegion = regionFilter === 'all' || m.region_id === regionFilter;
+// Subregion filter
+const subId = m.qiadat_id || m.subregion_id;
+const matchSubregion = subregionFilter === 'all' || subId === subregionFilter;
+// Age group filter
+const age = calculateAge(m.dob);
+const ageGroup = getAgeGroup(age);
+const matchAgeGroup = ageGroupFilter === 'all' || ageGroup === ageGroupFilter;
+// Status filter
+const matchStatus = statusFilter === 'all' || (m.status || 'Active') === statusFilter;
+return matchSearch && matchRegion && matchSubregion && matchAgeGroup && matchStatus;
+});
+renderMembers(filtered);
+}
+// === RENDER MEMBERS TABLE ===
+function renderMembers(membersToRender) {
+const tbody = document.getElementById('membersTable');
+if (!membersToRender || membersToRender.length === 0) {
+tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#666;">No members found</td></tr>';
+return;
+}
+let html = '';
+membersToRender.forEach(m => {
+const age = calculateAge(m.dob);
+const ageGroup = getAgeGroup(age);
+const ageGroupLabel = getAgeGroupLabel(ageGroup);
+const ageText = age !== null ? age + ' years' : 'N/A';
+const subregion = m.subregion_name || '-';
+const region = m.region_name || '-';
+const status = m.status || 'Active';
+html += `<tr>
+<td><code style="font-size:0.85rem;">${escapeHtml(m.member_id || 'N/A')}</code></td>
+<td>${escapeHtml(m.full_name || '')}</td>
+<td>${ageText}</td>
+<td><span class="age-badge ${ageGroup}">${ageGroupLabel}</span></td>
+<td>${escapeHtml(subregion)}</td>
+<td>${escapeHtml(region)}</td>
+<td>${escapeHtml(m.phone || '-')}</td>
+<td><span class="status-badge ${status.toLowerCase()}">${escapeHtml(status)}</span></td>
+<td>
+<button class="action-btn view" onclick="viewMember('${m.id}')" title="View"><i class="fas fa-eye"></i></button>
+<button class="action-btn edit" onclick="editMember('${m.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+<button class="action-btn delete" onclick="deleteMember('${m.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+</td>
+</tr>`;
+});
+tbody.innerHTML = html;
+}
+// === AGE PREVIEW ===
+function previewAgeGroup() {
+const dob = document.getElementById('dob').value;
+const display = document.getElementById('ageGroupDisplay');
+const desc = document.getElementById('ageDescDisplay');
+const icon = document.getElementById('ageIcon');
+if (!dob) { display.textContent = 'Not calculated'; desc.textContent = 'Enter DOB to calculate'; icon.className = 'fas fa-user'; return; }
+const age = calculateAge(dob);
+const group = getAgeGroup(age);
+const label = getAgeGroupLabel(group);
+display.textContent = `${label} (${age} years)`;
+if (group === 'khuddam') {
+desc.textContent = 'Eligible for Khuddam-ul-Ahmadiyya (15-40)';
+icon.className = 'fas fa-user-shield';
+} else if (group === 'atfal') {
+desc.textContent = 'Eligible for Atfal-ul-Ahmadiyya (7-14)';
+icon.className = 'fas fa-child';
+} else if (group === 'ansar') {
+desc.textContent = 'Eligible for Ansarullah (40+)';
+icon.className = 'fas fa-user-tie';
+} else {
+desc.textContent = 'Below enrollment age';
+icon.className = 'fas fa-child';
+}
+}
+// === GENERATE MEMBER ID ===
+async function generateMemberId() {
+const regionSel = document.getElementById('region');
+const qiadatSel = document.getElementById('qiadatId');
+const regionName = regionSel.selectedOptions[0]?.text || '';
+const qiadatId = qiadatSel.value;
+if (!regionName || !qiadatId) { showNotification('Select Region & Subregion', 'error'); return null; }
+const regionPrefix = regionName.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
+const sub = allSubregions.find(s => s.id === qiadatId);
+const subPrefix = sub ? sub.name.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase() : 'XX';
+// Check DB for existing IDs to prevent duplicates
+const { data: existing } = await supabase
+.from('members')
+.select('member_id')
+.like('member_id', `${regionPrefix}-${subPrefix}-%`);
+const count = existing ? existing.length : 0;
+const next = (count + 1).toString().padStart(4, '0');
+const id = `${regionPrefix}-${subPrefix}-${next}`;
+document.getElementById('memberId').value = id;
+return id;
+}
+// === SUBMIT FORM (ADD/EDIT) ===
+async function submitMemberForm() {
+const form = document.getElementById('enrollmentForm');
+if (!form.checkValidity()) { form.reportValidity(); return; }
+const memberDbId = document.getElementById('memberDbId').value;
+const isEdit = !!memberDbId;
+let memberId = document.getElementById('memberId').value;
+if (!isEdit) {
+memberId = await generateMemberId();
+if (!memberId) return;
+}
+const regionSel = document.getElementById('region');
+const regionName = regionSel.selectedOptions[0]?.text;
+const memberData = {
+full_name: document.getElementById('fullName').value,
+dob: document.getElementById('dob').value,
+date_of_birth: document.getElementById('dob').value,
+phone: document.getElementById('phone').value || null,
+email: document.getElementById('email').value || null,
+region: regionName,
+region_id: document.getElementById('region').value || null,
+qiadat_id: document.getElementById('qiadatId').value || null,
+subregion_id: document.getElementById('qiadatId').value || null,
+department_id: document.getElementById('departmentId').value || null,
+position: document.getElementById('position').value || null,
+address: document.getElementById('address').value || null,
+status: document.getElementById('status').value
+};
+if (!isEdit) {
+memberData.member_id = memberId;
+memberData.date_joined = new Date().toISOString().split('T')[0];
+}
+try {
+let error;
+if (isEdit) {
+const res = await supabase.from('members').update(memberData).eq('id', memberDbId);
+error = res.error;
+} else {
+const res = await supabase.from('members').insert([memberData]);
+error = res.error;
+}
+if (error) throw error;
+showNotification(`✓ Member ${isEdit ? 'updated' : 'registered'} successfully!`);
+closeModal();
+form.reset();
+document.getElementById('memberDbId').value = '';
+document.getElementById('memberId').value = '';
+document.getElementById('ageGroupDisplay').textContent = 'Not calculated';
+document.getElementById('ageDescDisplay').textContent = 'Enter DOB to calculate';
+await loadAllData();
+} catch (err) {
+console.error('Submit error:', err);
+showNotification('Failed: ' + err.message, 'error');
+}
+}
+// === VIEW MEMBER ===
+window.viewMember = async function(id) {
+const member = allMembers.find(m => m.id === id);
+if (!member) { showNotification('Member not found', 'error'); return; }
+const age = calculateAge(member.dob);
+const ageGroup = getAgeGroup(age);
+const ageGroupLabel = getAgeGroupLabel(ageGroup);
+Swal.fire({
+title: '<i class="fas fa-user"></i> Member Details',
+html: `
+<div style="text-align:left;padding:20px;">
+<p><strong>Member ID:</strong> ${escapeHtml(member.member_id || 'N/A')}</p>
+<p><strong>Full Name:</strong> ${escapeHtml(member.full_name || '')}</p>
+<p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
+<p><strong>Age:</strong> ${age !== null ? age + ' years' : 'N/A'}</p>
+<p><strong>Age Group:</strong> <span class="age-badge ${ageGroup}">${ageGroupLabel}</span></p>
+<p><strong>Region:</strong> ${escapeHtml(member.region_name || '-')}</p>
+<p><strong>Subregion:</strong> ${escapeHtml(member.subregion_name || '-')}</p>
+<p><strong>Department:</strong> ${escapeHtml(member.department_name || '-')}</p>
+<p><strong>Position:</strong> ${escapeHtml(member.position || '-')}</p>
+<p><strong>Phone:</strong> ${escapeHtml(member.phone || '-')}</p>
+<p><strong>Email:</strong> ${escapeHtml(member.email || '-')}</p>
+<p><strong>Status:</strong> <span class="status-badge ${(member.status || 'Active').toLowerCase()}">${escapeHtml(member.status || 'Active')}</span></p>
+<p><strong>Date Joined:</strong> ${member.date_joined || 'N/A'}</p>
+</div>
+`,
+icon: 'info',
+confirmButtonText: 'Close',
+confirmButtonColor: '#1e3a5f'
+});
+};
+// === EDIT MEMBER ===
+window.editMember = async function(id) {
+const member = allMembers.find(m => m.id === id);
+if (!member) { showNotification('Member not found', 'error'); return; }
+document.getElementById('memberDbId').value = member.id;
+document.getElementById('fullName').value = member.full_name || '';
+document.getElementById('memberId').value = member.member_id || '';
+document.getElementById('dob').value = member.dob || member.date_of_birth || '';
+document.getElementById('phone').value = member.phone || '';
+document.getElementById('email').value = member.email || '';
+document.getElementById('region').value = member.region_id || '';
+await loadSubregionsForForm();
+// Small delay to allow subregions to load before setting value
+setTimeout(() => {
+document.getElementById('qiadatId').value = member.qiadat_id || member.subregion_id || '';
+}, 100);
+document.getElementById('departmentId').value = member.department_id || '';
+document.getElementById('position').value = member.position || '';
+document.getElementById('status').value = member.status || 'Active';
+document.getElementById('address').value = member.address || '';
+document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Edit Member';
+previewAgeGroup();
+document.getElementById('memberModal').classList.add('show');
+};
+// === DELETE MEMBER ===
+window.deleteMember = function(id) {
+Swal.fire({
+title: 'Are you sure?',
+text: "You won't be able to revert this!",
+icon: 'warning',
+showCancelButton: true,
+confirmButtonColor: '#dc3545',
+cancelButtonColor: '#6c757d',
+confirmButtonText: 'Yes, delete it!',
+cancelButtonText: 'Cancel'
+}).then(async (result) => {
+if (result.isConfirmed) {
+try {
+const { error } = await supabase.from('members').delete().eq('id', id);
+if (error) throw error;
+showNotification('Member deleted successfully', 'success');
+await loadAllData();
+} catch (err) {
+showNotification('Delete failed: ' + err.message, 'error');
+}
+}
+});
+};
+// === MODALS ===
+function openAddModal() {
+document.getElementById('enrollmentForm').reset();
+document.getElementById('memberDbId').value = '';
+document.getElementById('memberId').value = '';
+document.getElementById('ageGroupDisplay').textContent = 'Not calculated';
+document.getElementById('ageDescDisplay').textContent = 'Enter DOB to calculate';
+document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Register New Member';
+document.getElementById('memberModal').classList.add('show');
+loadDropdownData();
+}
+function closeModal() {
+document.getElementById('memberModal').classList.remove('show');
+}
+// === REGION FILTER CHANGE ===
+document.getElementById('regionFilter')?.addEventListener('change', function() {
+loadSubregionsForFilter(this.value);
+});
+// === INIT ===
+async function init() {
+await loadAllData();
+document.querySelectorAll('.modal').forEach(modal => {
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+});
+}
+// Expose globals
+window.switchRegion = switchRegion;
+window.loadAllData = loadAllData;
+window.filterMembers = filterMembers;
+window.openAddModal = openAddModal;
+window.closeModal = closeModal;
+window.submitMemberForm = submitMemberForm;
+window.loadSubregionsForForm = loadSubregionsForForm;
+window.previewAgeGroup = previewAgeGroup;
+window.viewMember = viewMember;
+window.editMember = editMember;
+window.deleteMember = deleteMember;
+document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>

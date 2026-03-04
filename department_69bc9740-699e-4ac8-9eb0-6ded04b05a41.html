@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>National Dashboard - MKA Uganda</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0f3b2c;
+    --accent: #f4b400;
+    --card-bg: #ffffff;
+    --card-text: #0f3b2c;
+    --muted: #6b6b6b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --purple: #8b5cf6;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f3f4f6;
+    color: var(--card-text);
+    min-height: 100vh;
+  }
+  
+  /* Header */
+  .app-header {
+    background: white;
+    padding: 15px 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .logo-small {
+    width: 40px;
+    height: 40px;
+    background: var(--bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .logo-small svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--accent);
+  }
+  .header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bg);
+    cursor: pointer;
+  }
+  .header-title span {
+    color: var(--accent);
+    font-size: 14px;
+    display: block;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .last-updated {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .print-btn {
+    background: var(--bg);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .print-btn:hover {
+    background: #1a5a3a;
+  }
+  
+  /* Side Navigation */
+  .app-container {
+    display: flex;
+    min-height: calc(100vh - 80px);
+  }
+  .side-nav {
+    width: 260px;
+    background: white;
+    padding: 30px 0;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 25px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+  }
+  .nav-item:hover {
+    background: #f8fafc;
+    color: var(--bg);
+  }
+  .nav-item.active {
+    background: #f0fdf4;
+    color: var(--bg);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .nav-item svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+  .main-content {
+    flex: 1;
+    padding: 30px;
+    background: #f3f4f6;
+    overflow-y: auto;
+  }
+  
+  /* Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    font-size: 24px;
+  }
+  .stat-icon.national { background: #fef3c7; color: #d97706; }
+  .stat-icon.regions { background: #dbeafe; color: #2563eb; }
+  .stat-icon.members { background: #dcfce7; color: #16a34a; }
+  .stat-icon.zakat { background: #fae8ff; color: #9333ea; }
+  .stat-label {
+    font-size: 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--bg);
+    margin: 5px 0;
+  }
+  
+  /* Section Headers */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0 20px;
+  }
+  .section-header h2 {
+    font-size: 1.5rem;
+    color: var(--bg);
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+  }
+  .view-all {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  /* Region Cards */
+  .regions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .region-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .region-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    border-color: var(--accent);
+  }
+  .region-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .region-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--bg);
+  }
+  .region-badge {
+    background: #dbeafe;
+    color: #2563eb;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .region-badge.inactive {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .qaid-info {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .qaid-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--bg);
+    font-size: 14px;
+  }
+  .qaid-details {
+    flex: 1;
+  }
+  .qaid-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .qaid-contact {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .region-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+  }
+  .region-stat {
+    text-align: center;
+  }
+  .region-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--bg);
+  }
+  .region-stat-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    margin: 10px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bg), var(--accent));
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  
+  /* Charts Section */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .chart-header h3 {
+    font-size: 16px;
+    color: var(--bg);
+  }
+  
+  /* Bar Chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    height: 200px;
+    margin-top: 20px;
+  }
+  .bar-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar {
+    width: 100%;
+    background: linear-gradient(180deg, var(--bg), var(--accent));
+    border-radius: 8px 8px 0 0;
+    transition: height 0.3s;
+    min-height: 30px;
+  }
+  .bar-label {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  /* Pie Chart */
+  .pie-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  .pie-chart {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--bg) 0% var(--p1),
+      var(--accent) var(--p1) var(--p2),
+      var(--info) var(--p2) var(--p3),
+      var(--purple) var(--p3) 100%
+    );
+  }
+  .pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pie-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  
+  /* Tables */
+  .qaid-table {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    text-align: left;
+    padding: 12px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-badge.active {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  .status-badge.inactive {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .status-badge.pending {
+    background: #fef3c7;
+    color: #d97706;
+  }
+  
+  /* Report Modal */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .modal-header h2 {
+    margin: 0;
+    border: none;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+  }
+  .report-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+  .report-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .report-btn.print {
+    background: var(--bg);
+    color: white;
+  }
+  .report-btn.pdf {
+    background: var(--danger);
+    color: white;
+  }
+  .report-btn.excel {
+    background: var(--success);
+    color: white;
+  }
+  
+  /* Report Content */
+  .report-content {
+    font-family: 'Times New Roman', serif;
+    line-height: 1.6;
+    padding: 20px;
+  }
+  .report-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--bg);
+    padding-bottom: 20px;
+  }
+  .report-header h1 {
+    color: var(--bg);
+    font-size: 24px;
+  }
+  .report-header h2 {
+    color: var(--accent);
+    font-size: 18px;
+    border: none;
+    margin: 10px 0;
+  }
+  .report-meta {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+  .report-section {
+    margin: 30px 0;
+  }
+  .report-section h3 {
+    color: var(--bg);
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+    margin-bottom: 15px;
+  }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+  }
+  .report-table th {
+    background: var(--bg);
+    color: white;
+    padding: 8px;
+    font-size: 12px;
+  }
+  .report-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  .report-table tr:nth-child(even) {
+    background: #f8fafc;
+  }
+  .report-signature {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .signature-line {
+    width: 200px;
+    border-top: 1px solid black;
+    margin-top: 30px;
+    text-align: center;
+    padding-top: 5px;
+  }
+  
+  /* Loading State */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+  
+  /* Hidden */
+  .hidden { display: none !important; }
+  
+  /* Print Styles */
+  @media print {
+    .app-header, .side-nav, .print-btn, .modal-close, .report-actions {
+      display: none !important;
+    }
+    .app-container {
+      display: block;
+    }
+    .main-content {
+      padding: 0;
+    }
+    .report-content {
+      padding: 0.5in;
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .app-container {
+      flex-direction: column;
+    }
+    .side-nav {
+      width: 100%;
+      padding: 10px;
+    }
+    .nav-item {
+      padding: 10px 15px;
+    }
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+    .regions-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- App Header -->
+<div class="app-header">
+  <div class="logo-area" onclick="goToHomePage()">
+    <div class="logo-small">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C8 6 4 8 4 12c0 4 4 8 8 10 4-2 8-6 8-10 0-4-4-6-8-10z"/>
+      </svg>
+    </div>
+    <div class="header-title">
+      MAAL - DEPARTMENT <span>National Dashboard</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="last-updated" id="lastUpdated">Loading data...</div>
+    <button class="print-btn" onclick="printCurrentView()">
+      <span>🖨️</span> Print Current View
+    </button>
+  </div>
+</div>
+
+<!-- Main App Container -->
+<div class="app-container">
+  <!-- Side Navigation -->
+  <nav class="side-nav">
+    <div class="nav-item active" data-page="dashboardPage" onclick="showDashboard()">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10.5z"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-page="regionsPage" onclick="showPage('regionsPage')">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Regions
+    </div>
+    <div class="nav-item" data-page="qaidsPage" onclick="showPage('qaidsPage')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Qaids
+    </div>
+    <div class="nav-item" data-page="fundsPage" onclick="showPage('fundsPage')">
+      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+      Funds
+    </div>
+    <div class="nav-item" data-page="reportsPage" onclick="showPage('reportsPage')">
+      <svg viewBox="0 0 24 24"><path d="M21 21H4V4"/><path d="M7 15v4M11 11v8M15 7v12M19 3v16"/></svg>
+      Reports
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon national">🏛️</div>
+          <div class="stat-label">National Total</div>
+          <div class="stat-value" id="nationalTotal">UGX 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon regions">🗺️</div>
+          <div class="stat-label">Active Regions</div>
+          <div class="stat-value" id="activeRegions">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon members">👥</div>
+          <div class="stat-label">Total Members</div>
+          <div class="stat-value" id="totalMembers">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon zakat">💰</div>
+          <div class="stat-label">Compliance Rate</div>
+          <div class="stat-value" id="complianceRate">0%</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>📍 Regional Performance</h2>
+        <span class="view-all" onclick="showPage('regionsPage')">View All Regions →</span>
+      </div>
+
+      <div class="regions-grid" id="regionsOverview">
+        <div class="loading">Loading regions data...</div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Collection Trends (Last 6 Months)</h3>
+          </div>
+          <div class="bar-chart" id="trendChart">
+            <div class="loading">Loading chart data...</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Fund Distribution</h3>
+          </div>
+          <div class="pie-container" id="fundDistribution">
+            <div class="loading">Loading fund data...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2>🏆 Top Performing Regions</h2>
+      </div>
+
+      <div class="qaid-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Region</th>
+              <th>Qaid</th>
+              <th>Members</th>
+              <th>Collection</th>
+              <th>Compliance</th>
+            </tr>
+          </thead>
+          <tbody id="topRegionsTable">
+            <tr><td colspan="6" class="loading">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Regions Page -->
+    <div id="regionsPage" class="page hidden">
+      <div class="section-header">
+        <h2>🗺️ All Regions</h2>
+      </div>
+
+      <div class="regions-grid" id="allRegionsList">
+        <div class="loading">Loading regions...</div>
+      </div>
+    </div>
+
+    <!-- Qaids Page -->
+    <div id="qaidsPage" class="page hidden">
+      <div class="section-header">
+        <h2>👥 Regional Qaids</h2>
+      </div>
+
+      <div class="qaid-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Qaid</th>
+              <th>Region</th>
+              <th>Contact</th>
+              <th>Members</th>
+              <th>Collection</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="qaidsList">
+            <tr><td colspan="6" class="loading">Loading qaids...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Funds Page -->
+    <div id="fundsPage" class="page hidden">
+      <div class="section-header">
+        <h2>💰 Zakat Funds</h2>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #fef3c7; color: #d97706;">💰</div>
+          <div class="stat-label">Total Pool</div>
+          <div class="stat-value" id="totalPool">UGX 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">📊</div>
+          <div class="stat-label">Active Funds</div>
+          <div class="stat-value" id="activeFunds">0</div>
+        </div>
+      </div>
+
+      <div class="qaid-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Fund Name</th>
+              <th>Description</th>
+              <th>Allocated</th>
+              <th>Percentage</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="fundsList">
+            <tr><td colspan="5" class="loading">Loading funds...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reports Page -->
+    <div id="reportsPage" class="page hidden">
+      <div class="section-header">
+        <h2>📊 Generate Reports</h2>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" onclick="showReportModal('monthly')" style="cursor: pointer;">
+          <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">📅</div>
+          <div class="stat-label">Monthly Report</div>
+          <div class="stat-value">Generate</div>
+        </div>
+        <div class="stat-card" onclick="showReportModal('quarterly')" style="cursor: pointer;">
+          <div class="stat-icon" style="background: #fae8ff; color: #9333ea;">📊</div>
+          <div class="stat-label">Quarterly Report</div>
+          <div class="stat-value">Generate</div>
+        </div>
+        <div class="stat-card" onclick="showReportModal('annual')" style="cursor: pointer;">
+          <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">📈</div>
+          <div class="stat-label">Annual Report</div>
+          <div class="stat-value">Generate</div>
+        </div>
+        <div class="stat-card" onclick="showReportModal('regions')" style="cursor: pointer;">
+          <div class="stat-icon" style="background: #fef3c7; color: #d97706;">🗺️</div>
+          <div class="stat-label">Regions Summary</div>
+          <div class="stat-value">Generate</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Report Modal -->
+<div id="reportModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="reportModalTitle">Monthly Report - MKA Uganda</h2>
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+    </div>
+    
+    <div id="reportContent" class="report-content">
+      <!-- Report content will be injected here -->
+    </div>
+    
+    <div class="report-actions">
+      <button class="report-btn print" onclick="printReport()">🖨️ Print Report</button>
+      <button class="report-btn pdf" onclick="downloadPDF()">📥 Download PDF</button>
+      <button class="report-btn excel" onclick="downloadExcel()">📊 Export to Excel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+// Supabase config
+const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo"
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// State
+let regions = []
+let members = []
+let payments = []
+let funds = []
+let currentReportType = 'monthly'
+
+// DOM Elements
+const navItems = document.querySelectorAll('.nav-item')
+const pages = {
+  dashboardPage: document.getElementById('dashboardPage'),
+  regionsPage: document.getElementById('regionsPage'),
+  qaidsPage: document.getElementById('qaidsPage'),
+  fundsPage: document.getElementById('fundsPage'),
+  reportsPage: document.getElementById('reportsPage')
+}
+const reportModal = document.getElementById('reportModal')
+const reportContent = document.getElementById('reportContent')
+const reportModalTitle = document.getElementById('reportModalTitle')
+
+// ========== HOME PAGE NAVIGATION ==========
+function goToHomePage() {
+  window.location.href = 'index.html'
+}
+
+function showDashboard() {
+  // Instead of navigating within the app, go to department_69bc9740-699e-4ac8-9eb0-6ded04b05a41.html
+  window.location.href = 'department_69bc9740-699e-4ac8-9eb0-6ded04b05a41.html'
+}
+
+// ========== PAGE NAVIGATION ==========
+function showPage(pageId) {
+  Object.values(pages).forEach(page => page.classList.add('hidden'))
+  pages[pageId].classList.remove('hidden')
+  
+  navItems.forEach(item => item.classList.remove('active'))
+  document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active')
+  
+  // Load page data
+  if (pageId === 'dashboardPage') loadDashboard()
+  if (pageId === 'regionsPage') loadRegionsPage()
+  if (pageId === 'qaidsPage') loadQaidsPage()
+  if (pageId === 'fundsPage') loadFundsPage()
+}
+
+// ========== LOAD REAL DATA FROM SUPABASE ==========
+async function loadAllData() {
+  try {
+    document.getElementById('lastUpdated').textContent = 'Loading data from Supabase...'
+    
+    // Load regions
+    const { data: regionsData, error: regionsError } = await supabase
+      .from('regions')
+      .select('*')
+      .order('name')
+    
+    if (regionsError) throw regionsError
+    regions = regionsData || []
+    
+    // Load members
+    const { data: membersData, error: membersError } = await supabase
+      .from('members')
+      .select('*')
+      .limit(1000)
+    
+    if (membersError) throw membersError
+    members = membersData || []
+    
+    // Load payments
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from('zakat_allocations')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(2000)
+    
+    if (paymentsError) throw paymentsError
+    payments = paymentsData || []
+    
+    // Load funds
+    const { data: fundsData, error: fundsError } = await supabase
+      .from('zakat_funds')
+      .select('*')
+      .order('display_order')
+    
+    if (fundsError) throw fundsError
+    funds = fundsData || []
+    
+    const now = new Date()
+    document.getElementById('lastUpdated').textContent = `Last updated: ${now.toLocaleString()}`
+    
+    // Load dashboard by default
+    showPage('dashboardPage')
+    
+  } catch (error) {
+    console.error('Error loading data:', error)
+    document.getElementById('lastUpdated').textContent = 'Error loading data. Please refresh.'
+  }
+}
+
+// ========== DASHBOARD ==========
+async function loadDashboard() {
+  try {
+    // Calculate national totals
+    const totalMembers = members.length
+    const activeMembers = members.filter(m => m.status === 'Active').length
+    
+    // Group payments by member
+    const memberPayments = new Map()
+    payments.forEach(p => {
+      const amount = Number(p.amount) || 0
+      memberPayments.set(p.member_id, (memberPayments.get(p.member_id) || 0) + amount)
+    })
+    
+    const totalCollection = Array.from(memberPayments.values()).reduce((a, b) => a + b, 0)
+    const membersWhoPaid = memberPayments.size
+    const complianceRate = totalMembers > 0 ? Math.round((membersWhoPaid / totalMembers) * 100) : 0
+    
+    const activeRegions = regions.filter(r => r.active).length
+    
+    document.getElementById('nationalTotal').textContent = `UGX ${totalCollection.toLocaleString()}`
+    document.getElementById('activeRegions').textContent = activeRegions
+    document.getElementById('totalMembers').textContent = totalMembers.toLocaleString()
+    document.getElementById('complianceRate').textContent = `${complianceRate}%`
+    
+    // Group members by region
+    const regionStats = {}
+    regions.forEach(r => {
+      regionStats[r.name] = {
+        name: r.name,
+        active: r.active,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        description: r.description,
+        members: 0,
+        active_members: 0,
+        collection: 0,
+        qaid: 'Not Assigned'
+      }
+    })
+    
+    members.forEach(m => {
+      if (regionStats[m.region]) {
+        regionStats[m.region].members++
+        if (m.status === 'Active') regionStats[m.region].active_members++
+      }
+    })
+    
+    payments.forEach(p => {
+      const member = members.find(m => m.member_id === p.member_id)
+      if (member && regionStats[member.region]) {
+        regionStats[member.region].collection += Number(p.amount) || 0
+      }
+    })
+    
+    // Find Qaids
+    members.filter(m => m.position === 'Regional Qaid').forEach(q => {
+      if (regionStats[q.region]) {
+        regionStats[q.region].qaid = q.full_name
+      }
+    })
+    
+    // Calculate compliance for each region
+    Object.values(regionStats).forEach(r => {
+      r.compliance = r.members > 0 ? Math.round((r.active_members / r.members) * 100) : 0
+    })
+    
+    // Display regions overview
+    const regionsOverview = document.getElementById('regionsOverview')
+    const activeRegionList = Object.values(regionStats).filter(r => r.active).slice(0, 4)
+    
+    if (activeRegionList.length > 0) {
+      let html = ''
+      activeRegionList.forEach(region => {
+        const qaidInitials = region.qaid.split(' ').map(n => n[0]).join('').substring(0, 2)
+        
+        html += `
+          <div class="region-card" onclick="viewRegionDetails('${region.name}')">
+            <div class="region-header">
+              <span class="region-name">${region.name}</span>
+              <span class="region-badge">Active</span>
+            </div>
+            <div class="qaid-info">
+              <div class="qaid-avatar">${qaidInitials || '--'}</div>
+              <div class="qaid-details">
+                <div class="qaid-name">${region.qaid}</div>
+                <div class="qaid-contact">Regional Qaid</div>
+              </div>
+            </div>
+            <div class="region-stats">
+              <div class="region-stat">
+                <div class="region-stat-value">${region.members}</div>
+                <div class="region-stat-label">Members</div>
+              </div>
+              <div class="region-stat">
+                <div class="region-stat-value">UGX ${(region.collection/1000000).toFixed(1)}M</div>
+                <div class="region-stat-label">Collection</div>
+              </div>
+              <div class="region-stat">
+                <div class="region-stat-value">${region.compliance}%</div>
+                <div class="region-stat-label">Compliance</div>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${region.compliance}%"></div>
+            </div>
+          </div>
+        `
+      })
+      regionsOverview.innerHTML = html
+    } else {
+      regionsOverview.innerHTML = '<div class="loading">No active regions found</div>'
+    }
+    
+    // Fund distribution
+    const totalPool = funds.reduce((sum, f) => sum + (f.allocated || 0), 0)
+    if (funds.length > 0) {
+      let pieLegend = ''
+      let cumulativePercent = 0
+      const percentages = []
+      
+      funds.forEach((fund, index) => {
+        const percentage = totalPool > 0 ? Math.round((fund.allocated / totalPool) * 100) : 0
+        percentages.push(percentage)
+        cumulativePercent += percentage
+        
+        const colors = ['var(--bg)', 'var(--accent)', 'var(--info)', 'var(--purple)']
+        pieLegend += `
+          <div class="pie-legend-item">
+            <span style="width:12px; height:12px; background:${colors[index % 4]}; border-radius:4px;"></span>
+            ${fund.name} (${percentage}%)
+          </div>
+        `
+      })
+      
+      // Set CSS variables for pie chart
+      const pieChart = document.createElement('div')
+      pieChart.className = 'pie-chart'
+      pieChart.style.setProperty('--p1', `${percentages[0] || 0}%`)
+      pieChart.style.setProperty('--p2', `${(percentages[0] || 0) + (percentages[1] || 0)}%`)
+      pieChart.style.setProperty('--p3', `${(percentages[0] || 0) + (percentages[1] || 0) + (percentages[2] || 0)}%`)
+      
+      document.getElementById('fundDistribution').innerHTML = `
+        ${pieChart.outerHTML}
+        <div class="pie-legend">${pieLegend}</div>
+      `
+    }
+    
+    // Top regions table
+    const topRegions = Object.values(regionStats)
+      .filter(r => r.members > 0)
+      .sort((a, b) => b.compliance - a.compliance)
+      .slice(0, 5)
+    
+    let tableHtml = ''
+    topRegions.forEach((region, index) => {
+      tableHtml += `
+        <tr>
+          <td>#${index + 1}</td>
+          <td>${region.name}</td>
+          <td>${region.qaid}</td>
+          <td>${region.members}</td>
+          <td>UGX ${(region.collection/1000000).toFixed(1)}M</td>
+          <td><span class="status-badge ${region.compliance >= 70 ? 'active' : region.compliance >= 50 ? 'pending' : 'inactive'}">${region.compliance}%</span></td>
+        </tr>
+      `
+    })
+    document.getElementById('topRegionsTable').innerHTML = tableHtml || '<tr><td colspan="6" class="loading">No data available</td></tr>'
+    
+    // Trend chart
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+    const monthlyTotals = [0, 0, 0, 0, 0, 0]
+    
+    payments.forEach(p => {
+      const date = new Date(p.created_at)
+      const month = date.getMonth()
+      if (month < 6) {
+        monthlyTotals[month] += Number(p.amount) || 0
+      }
+    })
+    
+    const maxTotal = Math.max(...monthlyTotals)
+    let trendHtml = ''
+    months.forEach((month, i) => {
+      const height = maxTotal > 0 ? (monthlyTotals[i] / maxTotal) * 180 : 30
+      trendHtml += `
+        <div class="bar-container">
+          <div class="bar" style="height: ${Math.max(30, height)}px;"></div>
+          <div class="bar-label">${month}</div>
+        </div>
+      `
+    })
+    document.getElementById('trendChart').innerHTML = trendHtml
+    
+  } catch (error) {
+    console.error('Dashboard error:', error)
+  }
+}
+
+// ========== REGIONS PAGE ==========
+async function loadRegionsPage() {
+  try {
+    const regionsList = document.getElementById('allRegionsList')
+    
+    if (regions.length === 0) {
+      regionsList.innerHTML = '<div class="loading">No regions found</div>'
+      return
+    }
+    
+    let html = ''
+    regions.forEach(region => {
+      const regionMembers = members.filter(m => m.region === region.name)
+      const memberCount = regionMembers.length
+      const qaid = regionMembers.find(m => m.position === 'Regional Qaid')
+      const qaidName = qaid ? qaid.full_name : 'Not Assigned'
+      const qaidInitials = qaidName.split(' ').map(n => n[0]).join('').substring(0, 2)
+      
+      html += `
+        <div class="region-card">
+          <div class="region-header">
+            <span class="region-name">${region.name}</span>
+            <span class="region-badge ${!region.active ? 'inactive' : ''}">${region.active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="qaid-info">
+            <div class="qaid-avatar">${qaidInitials || '--'}</div>
+            <div class="qaid-details">
+              <div class="qaid-name">${qaidName}</div>
+              <div class="qaid-contact">${region.description || 'No description'}</div>
+            </div>
+          </div>
+          <div class="region-stats">
+            <div class="region-stat">
+              <div class="region-stat-value">${memberCount}</div>
+              <div class="region-stat-label">Members</div>
+            </div>
+            <div class="region-stat">
+              <div class="region-stat-value">${region.latitude?.toFixed(4) || '0.0000'}</div>
+              <div class="region-stat-label">Latitude</div>
+            </div>
+            <div class="region-stat">
+              <div class="region-stat-value">${region.longitude?.toFixed(4) || '0.0000'}</div>
+              <div class="region-stat-label">Longitude</div>
+            </div>
+          </div>
+        </div>
+      `
+    })
+    
+    regionsList.innerHTML = html
+    
+  } catch (error) {
+    console.error('Regions page error:', error)
+    document.getElementById('allRegionsList').innerHTML = '<div class="loading">Error loading regions</div>'
+  }
+}
+
+// ========== QAIDS PAGE ==========
+async function loadQaidsPage() {
+  try {
+    const qaidsList = document.getElementById('qaidsList')
+    const qaids = members.filter(m => m.position === 'Regional Qaid')
+    
+    if (qaids.length === 0) {
+      qaidsList.innerHTML = '<tr><td colspan="6" class="loading">No Regional Qaids found</td></tr>'
+      return
+    }
+    
+    const regionPayments = {}
+    payments.forEach(p => {
+      const member = members.find(m => m.member_id === p.member_id)
+      if (member && member.region) {
+        regionPayments[member.region] = (regionPayments[member.region] || 0) + (Number(p.amount) || 0)
+      }
+    })
+    
+    let html = ''
+    qaids.forEach(qaid => {
+      const memberCount = members.filter(m => m.region === qaid.region).length
+      const collection = regionPayments[qaid.region] || 0
+      
+      html += `
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="qaid-avatar" style="width:32px; height:32px;">${qaid.full_name.split(' ').map(n => n[0]).join('')}</div>
+              ${qaid.full_name}
+            </div>
+          </td>
+          <td>${qaid.region || 'Not Assigned'}</td>
+          <td>${qaid.email || 'No email'}<br><small>${qaid.phone || 'No phone'}</small></td>
+          <td>${memberCount}</td>
+          <td>UGX ${(collection/1000000).toFixed(1)}M</td>
+          <td><span class="status-badge active">Active</span></td>
+        </tr>
+      `
+    })
+    
+    qaidsList.innerHTML = html
+    
+  } catch (error) {
+    console.error('Qaids page error:', error)
+    document.getElementById('qaidsList').innerHTML = '<tr><td colspan="6" class="loading">Error loading qaids</td></tr>'
+  }
+}
+
+// ========== FUNDS PAGE ==========
+async function loadFundsPage() {
+  try {
+    const fundsList = document.getElementById('fundsList')
+    
+    if (funds.length === 0) {
+      fundsList.innerHTML = '<tr><td colspan="5" class="loading">No funds found</td></tr>'
+      document.getElementById('totalPool').textContent = 'UGX 0'
+      document.getElementById('activeFunds').textContent = '0'
+      return
+    }
+    
+    const totalPool = funds.reduce((sum, f) => sum + (f.allocated || 0), 0)
+    const activeFunds = funds.filter(f => f.is_active).length
+    
+    document.getElementById('totalPool').textContent = `UGX ${totalPool.toLocaleString()}`
+    document.getElementById('activeFunds').textContent = activeFunds
+    
+    let html = ''
+    funds.forEach(fund => {
+      const percentage = totalPool > 0 ? Math.round((fund.allocated / totalPool) * 100) : 0
+      html += `
+        <tr>
+          <td><strong>${fund.name}</strong></td>
+          <td>${fund.description || 'No description'}</td>
+          <td>UGX ${(fund.allocated || 0).toLocaleString()}</td>
+          <td>${percentage}%</td>
+          <td><span class="status-badge ${fund.is_active ? 'active' : 'inactive'}">${fund.is_active ? 'Active' : 'Inactive'}</span></td>
+        </tr>
+      `
+    })
+    
+    fundsList.innerHTML = html
+    
+  } catch (error) {
+    console.error('Funds page error:', error)
+    document.getElementById('fundsList').innerHTML = '<tr><td colspan="5" class="loading">Error loading funds</td></tr>'
+  }
+}
+
+// ========== REPORT GENERATION ==========
+async function generateReport(type) {
+  currentReportType = type
+  
+  const now = new Date()
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  
+  // Calculate totals
+  const totalMembers = members.length
+  const activeMembers = members.filter(m => m.status === 'Active').length
+  
+  const memberPayments = new Map()
+  payments.forEach(p => {
+    const amount = Number(p.amount) || 0
+    memberPayments.set(p.member_id, (memberPayments.get(p.member_id) || 0) + amount)
+  })
+  
+  const totalCollection = Array.from(memberPayments.values()).reduce((a, b) => a + b, 0)
+  const membersWhoPaid = memberPayments.size
+  const complianceRate = totalMembers > 0 ? Math.round((membersWhoPaid / totalMembers) * 100) : 0
+  
+  // Region stats
+  const regionStats = {}
+  regions.forEach(r => {
+    regionStats[r.name] = {
+      name: r.name,
+      members: 0,
+      collection: 0,
+      qaid: 'Not Assigned'
+    }
+  })
+  
+  members.forEach(m => {
+    if (regionStats[m.region]) {
+      regionStats[m.region].members++
+    }
+  })
+  
+  payments.forEach(p => {
+    const member = members.find(m => m.member_id === p.member_id)
+    if (member && regionStats[member.region]) {
+      regionStats[member.region].collection += Number(p.amount) || 0
+    }
+  })
+  
+  members.filter(m => m.position === 'Regional Qaid').forEach(q => {
+    if (regionStats[q.region]) {
+      regionStats[q.region].qaid = q.full_name
+    }
+  })
+  
+  // Fund stats
+  const totalPool = funds.reduce((sum, f) => sum + (f.allocated || 0), 0)
+  
+  // Build report HTML
+  let reportHtml = `
+    <div class="report-header">
+      <h1>MAJLIS KHUDDAMUL AHMADIYYA UGANDA</h1>
+      <h2>NATIONAL ZAKAT REPORT</h2>
+      <p>${type.toUpperCase()} REPORT - ${monthNames[now.getMonth()]} ${now.getFullYear()}</p>
+    </div>
+    
+    <div class="report-meta">
+      <div><strong>Report Generated:</strong> ${now.toLocaleString()}</div>
+      <div><strong>Data Period:</strong> ${type === 'monthly' ? 'Current Month' : type === 'quarterly' ? 'Last 3 Months' : type === 'annual' ? 'Current Year' : 'All Time'}</div>
+    </div>
+    
+    <div class="report-section">
+      <h3>📊 NATIONAL SUMMARY</h3>
+      <table class="report-table">
+        <tr>
+          <th>Total Members</th>
+          <th>Active Members</th>
+          <th>Total Collection</th>
+          <th>Members Paid</th>
+          <th>Compliance Rate</th>
+        </tr>
+        <tr>
+          <td>${totalMembers.toLocaleString()}</td>
+          <td>${activeMembers.toLocaleString()}</td>
+          <td>UGX ${totalCollection.toLocaleString()}</td>
+          <td>${membersWhoPaid.toLocaleString()}</td>
+          <td>${complianceRate}%</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div class="report-section">
+      <h3>🗺️ REGIONAL PERFORMANCE</h3>
+      <table class="report-table">
+        <tr>
+          <th>Region</th>
+          <th>Qaid</th>
+          <th>Members</th>
+          <th>Collection</th>
+          <th>Average per Member</th>
+        </tr>
+  `
+  
+  Object.values(regionStats).forEach(region => {
+    const avgPerMember = region.members > 0 ? region.collection / region.members : 0
+    reportHtml += `
+      <tr>
+        <td>${region.name}</td>
+        <td>${region.qaid}</td>
+        <td>${region.members}</td>
+        <td>UGX ${region.collection.toLocaleString()}</td>
+        <td>UGX ${Math.round(avgPerMember).toLocaleString()}</td>
+      </tr>
+    `
+  })
+  
+  reportHtml += `
+      </table>
+    </div>
+    
+    <div class="report-section">
+      <h3>💰 FUND DISTRIBUTION</h3>
+      <table class="report-table">
+        <tr>
+          <th>Fund Name</th>
+          <th>Allocated Amount</th>
+          <th>Percentage</th>
+        </tr>
+  `
+  
+  funds.forEach(fund => {
+    const percentage = totalPool > 0 ? Math.round((fund.allocated / totalPool) * 100) : 0
+    reportHtml += `
+      <tr>
+        <td>${fund.name}</td>
+        <td>UGX ${(fund.allocated || 0).toLocaleString()}</td>
+        <td>${percentage}%</td>
+      </tr>
+    `
+  })
+  
+  reportHtml += `
+      </table>
+    </div>
+    
+    <div class="report-section">
+      <h3>👥 REGIONAL QAIDS</h3>
+      <table class="report-table">
+        <tr>
+          <th>Qaid Name</th>
+          <th>Region</th>
+          <th>Contact</th>
+          <th>Members</th>
+        </tr>
+  `
+  
+  members.filter(m => m.position === 'Regional Qaid').forEach(qaid => {
+    const memberCount = members.filter(m => m.region === qaid.region).length
+    reportHtml += `
+      <tr>
+        <td>${qaid.full_name}</td>
+        <td>${qaid.region || 'Not Assigned'}</td>
+        <td>${qaid.email || 'No email'}</td>
+        <td>${memberCount}</td>
+      </tr>
+    `
+  })
+  
+  reportHtml += `
+      </table>
+    </div>
+    
+    <div class="report-signature">
+      <div>
+        <p>_________________________</p>
+        <p><strong>National President</strong></p>
+        <p>Majlis Khuddamul Ahmadiyya Uganda</p>
+      </div>
+      <div>
+        <p>_________________________</p>
+        <p><strong>National Maal Secretary</strong></p>
+        <p>Date: ${now.toLocaleDateString()}</p>
+      </div>
+    </div>
+  `
+  
+  return reportHtml
+}
+
+// ========== REPORT MODAL ==========
+async function showReportModal(type) {
+  currentReportType = type
+  const titles = {
+    monthly: 'Monthly Report',
+    quarterly: 'Quarterly Report',
+    annual: 'Annual Report',
+    regions: 'Regions Summary Report'
+  }
+  
+  reportModalTitle.textContent = `${titles[type]} - MKA Uganda`
+  reportContent.innerHTML = '<div class="loading">Generating report...</div>'
+  reportModal.classList.remove('hidden')
+  
+  const reportHtml = await generateReport(type)
+  reportContent.innerHTML = reportHtml
+}
+
+function closeReportModal() {
+  reportModal.classList.add('hidden')
+}
+
+// ========== PRINT FUNCTIONS ==========
+function printCurrentView() {
+  window.print()
+}
+
+async function printReport() {
+  const printWindow = window.open('', '_blank')
+  const reportHtml = await generateReport(currentReportType)
+  
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>MKA Uganda - ${currentReportType.toUpperCase()} Report</title>
+        <style>
+          body { font-family: 'Times New Roman', serif; padding: 0.5in; }
+          .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0f3b2c; }
+          .report-header h1 { color: #0f3b2c; }
+          .report-header h2 { color: #f4b400; }
+          .report-meta { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f8fafc; }
+          .report-section { margin: 30px 0; }
+          .report-section h3 { color: #0f3b2c; border-left: 4px solid #f4b400; padding-left: 10px; }
+          .report-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          .report-table th { background: #0f3b2c; color: white; padding: 8px; }
+          .report-table td { padding: 8px; border: 1px solid #ddd; }
+          .report-table tr:nth-child(even) { background: #f8fafc; }
+          .report-signature { margin-top: 40px; display: flex; justify-content: space-between; }
+        </style>
+      </head>
+      <body>
+        ${reportHtml}
+      </body>
+    </html>
+  `)
+  
+  printWindow.document.close()
+  printWindow.focus()
+  printWindow.print()
+}
+
+// ========== EXPORT FUNCTIONS ==========
+function downloadPDF() {
+  const { jsPDF } = window.jspdf
+  const doc = new jsPDF()
+  
+  doc.setFontSize(18)
+  doc.text('MKA Uganda - Zakat Report', 20, 20)
+  
+  doc.setFontSize(12)
+  doc.text(`Report Type: ${currentReportType.toUpperCase()}`, 20, 30)
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 40)
+  
+  let yPos = 50
+  doc.text('National Summary:', 20, yPos)
+  yPos += 10
+  
+  const totalMembers = members.length
+  const activeMembers = members.filter(m => m.status === 'Active').length
+  
+  doc.text(`Total Members: ${totalMembers}`, 30, yPos)
+  yPos += 7
+  doc.text(`Active Members: ${activeMembers}`, 30, yPos)
+  yPos += 7
+  
+  const memberPayments = new Map()
+  payments.forEach(p => {
+    const amount = Number(p.amount) || 0
+    memberPayments.set(p.member_id, (memberPayments.get(p.member_id) || 0) + amount)
+  })
+  
+  const totalCollection = Array.from(memberPayments.values()).reduce((a, b) => a + b, 0)
+  doc.text(`Total Collection: UGX ${totalCollection.toLocaleString()}`, 30, yPos)
+  
+  doc.save(`MKA_Report_${currentReportType}_${new Date().toISOString().split('T')[0]}.pdf`)
+}
+
+function downloadExcel() {
+  // Create workbook
+  const wb = XLSX.utils.book_new()
+  
+  // Summary sheet
+  const summaryData = [
+    ['MKA UGANDA - ZAKAT REPORT'],
+    [`Report Type: ${currentReportType.toUpperCase()}`],
+    [`Generated: ${new Date().toLocaleString()}`],
+    [],
+    ['NATIONAL SUMMARY'],
+    ['Total Members', members.length],
+    ['Active Members', members.filter(m => m.status === 'Active').length],
+    ['Total Collection', `UGX ${Array.from(new Map(payments.map(p => [p.member_id, (Number(p.amount) || 0)])).values()).reduce((a, b) => a + b, 0).toLocaleString()}`]
+  ]
+  
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData)
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
+  
+  // Regions sheet
+  const regionStats = {}
+  regions.forEach(r => {
+    regionStats[r.name] = {
+      name: r.name,
+      members: members.filter(m => m.region === r.name).length,
+      collection: payments.filter(p => {
+        const member = members.find(m => m.member_id === p.member_id)
+        return member && member.region === r.name
+      }).reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+    }
+  })
+  
+  const regionData = [['Region', 'Members', 'Collection (UGX)']]
+  Object.values(regionStats).forEach(r => {
+    regionData.push([r.name, r.members, r.collection])
+  })
+  
+  const wsRegions = XLSX.utils.aoa_to_sheet(regionData)
+  XLSX.utils.book_append_sheet(wb, wsRegions, 'Regions')
+  
+  // Qaids sheet
+  const qaidData = [['Qaid Name', 'Region', 'Email', 'Phone']]
+  members.filter(m => m.position === 'Regional Qaid').forEach(q => {
+    qaidData.push([q.full_name, q.region || 'Not Assigned', q.email || '', q.phone || ''])
+  })
+  
+  const wsQaids = XLSX.utils.aoa_to_sheet(qaidData)
+  XLSX.utils.book_append_sheet(wb, wsQaids, 'Qaids')
+  
+  // Funds sheet
+  const fundData = [['Fund Name', 'Description', 'Allocated', 'Status']]
+  funds.forEach(f => {
+    fundData.push([f.name, f.description || '', f.allocated || 0, f.is_active ? 'Active' : 'Inactive'])
+  })
+  
+  const wsFunds = XLSX.utils.aoa_to_sheet(fundData)
+  XLSX.utils.book_append_sheet(wb, wsFunds, 'Funds')
+  
+  // Save file
+  XLSX.writeFile(wb, `MKA_Report_${currentReportType}_${new Date().toISOString().split('T')[0]}.xlsx`)
+}
+
+// ========== HELPER FUNCTIONS ==========
+window.viewRegionDetails = (regionName) => {
+  const region = regions.find(r => r.name === regionName)
+  const regionMembers = members.filter(m => m.region === regionName)
+  const qaid = regionMembers.find(m => m.position === 'Regional Qaid')
+  
+  alert(`
+📍 ${regionName}
+━━━━━━━━━━━━━━━━━━
+Status: ${region?.active ? 'Active' : 'Inactive'}
+Qaid: ${qaid?.full_name || 'Not Assigned'}
+Total Members: ${regionMembers.length}
+Active Members: ${regionMembers.filter(m => m.status === 'Active').length}
+Coordinates: ${region?.latitude}, ${region?.longitude}
+Description: ${region?.description || 'No description'}
+  `)
+}
+
+// ========== INITIALIZE ==========
+loadAllData()
+
+// Make functions global
+window.showPage = showPage
+window.showDashboard = showDashboard
+window.goToHomePage = goToHomePage
+window.showReportModal = showReportModal
+window.closeReportModal = closeReportModal
+window.printCurrentView = printCurrentView
+window.printReport = printReport
+window.downloadPDF = downloadPDF
+window.downloadExcel = downloadExcel
+</script>
+</body>
+</html>
