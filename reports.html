@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKA Uganda • Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<!-- Supabase Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { 
+    --black: #000000; 
+    --dark-gray: #1a1a1a; 
+    --medium-gray: #4a4a4a; 
+    --light-gray: #e0e0e0; 
+    --border: #cccccc; 
+    --white: #ffffff; 
+    --off-white: #fafafa; 
+    --danger: #cc0000; 
+    --success: #2e7d32; 
+    --warning: #ed6c02; 
+    --info: #1976d2;
+    --purple: #673ab7;
+    --orange: #ff9800;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Libre Franklin',sans-serif; background:var(--off-white); color:var(--dark-gray); }
+header { position:fixed; top:0; left:0; right:0; height:90px; background:var(--white); border-bottom:1px solid var(--border); z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.header-container { display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 100%; }
+.flag-banner { background: linear-gradient(to right, var(--black) 33%, var(--light-gray) 33%, var(--light-gray) 66%, var(--dark-gray) 66%); height: 6px; width: 100%; position: absolute; top: 0; left: 0; }
+.logo-section { display: flex; align-items: center; gap: 15px; }
+.logo { font-family:'Cormorant Garamond',serif; font-size:2.2rem; color:var(--black); display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--black); }
+.logo small { font-size:0.85rem; display:block; margin-top:-2px; color:var(--medium-gray); letter-spacing:1.5px; }
+.search-section { flex: 1; max-width: 500px; margin: 0 2rem; }
+.search-bar { width: 100%; padding: 12px 20px; border: 1px solid var(--border); border-radius: 30px; background: var(--white); font-size: 0.95rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; color: var(--dark-gray); }
+.search-bar:focus { outline: none; border-color: var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+.user-section { display: flex; align-items: center; gap: 20px; }
+.fax-btn { background: var(--black); color: var(--white); border: 2px solid var(--black); padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s; }
+.fax-btn:hover { background: var(--white); color: var(--black); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.user-profile { display: flex; align-items: center; gap: 12px; font-weight: 500; cursor: pointer; position: relative; }
+.user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--black); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--white); font-weight: bold; }
+.user-info { text-align: right; }
+.user-info strong { color: var(--black); font-size: 1rem; }
+.user-info small { color: var(--medium-gray); font-size: 0.8rem; }
+.user-dropdown { position: absolute; top: 65px; right: 0; background: var(--white); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 15px 0; min-width: 200px; display: none; z-index: 1001; border: 1px solid var(--border); }
+.user-profile:hover .user-dropdown { display: block; }
+.dropdown-item { padding: 10px 20px; cursor: pointer; transition: background 0.2s; color: var(--dark-gray); text-decoration: none; display: block; }
+.dropdown-item:hover { background: var(--light-gray); color: var(--black); }
+.sidebar { position: fixed; left: 0; top: 90px; bottom: 0; width: 280px; background: var(--white); border-right: 1px solid var(--border); padding-top: 2rem; box-shadow: 6px 0 20px rgba(0,0,0,0.03); overflow-y: auto; }
+.sidebar h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--black); text-align: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+.menu-item { padding: 1.1rem 2rem; display: flex; align-items: center; gap: 16px; color: var(--dark-gray); font-weight: 500; cursor: pointer; transition: 0.3s; border-left: 3px solid transparent; text-decoration: none; }
+.menu-item:hover, .menu-item.active { background: var(--light-gray); color: var(--black); font-weight: 600; border-left-color: var(--black); }
+.menu-item i { color: var(--medium-gray); width: 20px; text-align: center; }
+.menu-item:hover i, .menu-item.active i { color: var(--black); }
+.main { margin-left: 280px; padding: 130px 50px 100px; min-height: 100vh; }
+.action-buttons { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.btn { padding: 10px 20px; border: 2px solid var(--black); border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; font-size: 0.95rem; background: var(--white); color: var(--black); text-decoration: none; }
+.btn:hover { background: var(--black); color: var(--white); transform: translateY(-2px); }
+.btn-add { background: var(--black); color: var(--white); }
+.btn-add:hover { background: var(--dark-gray); }
+.btn-edit { background: var(--white); color: var(--black); }
+.btn-edit:hover { background: var(--black); color: var(--white); }
+.btn-remove { background: var(--white); color: var(--danger); border-color: var(--danger); }
+.btn-remove:hover { background: var(--danger); color: var(--white); }
+.btn-view { background: var(--white); color: var(--black); }
+.btn-view:hover { background: var(--black); color: var(--white); }
+.btn-export { background: var(--white); color: var(--black); border-color: var(--info); }
+.btn-export:hover { background: var(--info); color: var(--white); border-color: var(--info); }
+.btn-print { background: var(--white); color: var(--black); border-color: var(--success); }
+.btn-print:hover { background: var(--success); color: var(--white); border-color: var(--success); }
+.data-section { background: var(--white); border-radius: 16px; padding: 25px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 30px; }
+.section-title { font-family: 'Cormorant Garamond', serif; color: var(--black); font-size: 1.8rem; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.stat-card { background: var(--white); border-radius: 16px; padding: 25px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border: 1px solid var(--border); text-align: center; transition: transform 0.3s; }
+.stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+.stat-card i { font-size: 2.5rem; color: var(--black); margin-bottom: 12px; }
+.stat-card .number { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: var(--black); margin: 8px 0; }
+.stat-card .label { color: var(--medium-gray); font-size: 0.9rem; }
+.stat-card .trend { font-size: 0.85rem; margin-top: 8px; }
+.stat-card .trend.up { color: var(--success); }
+.stat-card .trend.down { color: var(--danger); }
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 30px; }
+@media (max-width: 1200px) { .charts-grid { grid-template-columns: 1fr; } }
+.chart-card { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+.chart-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--black); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.chart-container { position: relative; height: 280px; width: 100%; }
+.filter-panel { background: var(--white); border-radius: 16px; padding: 20px 25px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 30px; }
+.filter-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+.filter-group { flex: 1; min-width: 180px; }
+.filter-group label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--black); font-size: 0.9rem; }
+.filter-group input, .filter-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); font-size: 0.95rem; }
+.filter-group input:focus, .filter-group select:focus { outline: none; border-color: var(--black); }
+.btn-apply { padding: 10px 25px; background: var(--black); color: var(--white); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-apply:hover { background: var(--dark-gray); }
+.btn-reset { padding: 10px 20px; background: var(--white); color: var(--dark-gray); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.btn-reset:hover { background: var(--light-gray); color: var(--black); }
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); color: var(--dark-gray); }
+th { background-color: var(--off-white); font-weight: 600; color: var(--black); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+tr { transition: background-color 0.2s; }
+tr:hover { background-color: var(--light-gray); }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; border: 1px solid var(--border); }
+.badge-active { background: var(--success); color: var(--white); border-color: var(--success); }
+.badge-pending { background: var(--warning); color: var(--white); border-color: var(--warning); }
+.badge-inactive { background: var(--light-gray); color: var(--dark-gray); border-color: var(--border); }
+.loading { text-align: center; padding: 40px; color: var(--medium-gray); }
+.loading-spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid var(--light-gray); border-radius: 50%; border-top-color: var(--black); animation: spin 1s linear infinite; margin-bottom: 15px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--medium-gray); }
+.empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--white); border-left: 4px solid var(--black); padding: 15px 25px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 3000; display: none; animation: slideIn 0.3s ease-out; border: 1px solid var(--border); }
+@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+.toast i { margin-right: 10px; }
+.report-header { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.report-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--black); margin-bottom: 5px; }
+.report-header p { color: var(--medium-gray); font-size: 0.95rem; }
+.report-meta { display: flex; justify-content: center; gap: 25px; margin-top: 15px; font-size: 0.9rem; color: var(--medium-gray); flex-wrap: wrap; }
+.report-meta span { display: flex; align-items: center; gap: 6px; }
+.export-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
+.report-type-selector { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+.report-type-btn { padding: 8px 18px; border: 1px solid var(--border); background: var(--white); border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.report-type-btn:hover, .report-type-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 25px 0; }
+.summary-card { background: var(--off-white); border-radius: 12px; padding: 20px; border-left: 4px solid var(--black); }
+.summary-card h4 { font-family: 'Cormorant Garamond', serif; color: var(--black); margin-bottom: 10px; }
+.summary-card .value { font-size: 1.8rem; font-weight: 700; color: var(--black); }
+.summary-card .detail { font-size: 0.9rem; color: var(--medium-gray); margin-top: 5px; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; }
+.pagination button { padding: 8px 16px; border: 1px solid var(--border); background: var(--white); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.pagination button:hover, .pagination button.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+.pagination span { margin: 0 10px; font-weight: 500; }
+.print-only { display: none; }
+@media print {
+    header, .sidebar, .filter-panel, .action-buttons, .export-buttons, .pagination, .toast, .modal { display: none !important; }
+    .main { margin-left: 0; padding: 20px; }
+    .data-section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .print-only { display: block; }
+    body { background: white; color: black; }
+    .chart-container canvas { max-width: 100%; }
+}
+
+/* Modal Styles */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
+.modal-content { background: var(--white); border-radius: 16px; width: 90%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); padding: 30px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+.modal-title { font-family: 'Cormorant Garamond', serif; color: var(--black); font-size: 1.8rem; }
+.close-modal { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--medium-gray); transition: color 0.2s; }
+.close-modal:hover { color: var(--black); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--black); }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+.confirm-btn { padding: 10px 25px; border: 2px solid var(--black); border-radius: 6px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--black); transition: all 0.2s; }
+.confirm-btn:hover { background: var(--black); color: var(--white); }
+.confirm-no { background: var(--white); color: var(--dark-gray); border-color: var(--border); }
+.confirm-no:hover { background: var(--light-gray); color: var(--black); }
+</style>
+</head>
+<body>
+<!-- HEADER -->
+<header>
+<div class="flag-banner"></div>
+<div class="header-container">
+<div class="logo-section">
+<div class="logo">
+<img src="https://avatars.githubusercontent.com/u/214355993?v=4" alt="MKA Uganda Logo" class="logo-icon">
+<div>
+<strong style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--black);">MKA Uganda</strong>
+<small style="display:block; color:var(--medium-gray); letter-spacing:1px; margin-top:2px;">MAJLIS KHUDDAMUL AHMADIYYA</small>
+</div>
+</div>
+</div>
+<div class="search-section">
+<input type="text" class="search-bar" id="globalSearch" placeholder="Search reports, data, metrics..." onkeyup="performSearch(event)">
+</div>
+<div class="user-section">
+<button class="fax-btn" id="faxTab"><i class="fas fa-fax"></i> Send Fax to Huzoor (aba)</button>
+<div class="user-profile">
+<div class="user-avatar"><i class="fas fa-user"></i></div>
+<div class="user-info"><strong>Sadr Sahib</strong><small>National President</small></div>
+<div class="user-dropdown">
+<a href="profile.html" class="dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+<a href="settings.html" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+<div class="dropdown-divider"></div>
+<div class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<h3>MKA Uganda</h3>
+<a href="index.html" class="menu-item" id="nav-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+<a href="members.html" class="menu-item" id="nav-members"><i class="fas fa-users"></i> Khuddam</a>
+<a href="departments.html" class="menu-item" id="nav-departments"><i class="fas fa-building"></i> Departments</a>
+<a href="regions.html" class="menu-item" id="nav-regions"><i class="fas fa-sitemap"></i> Regions</a>
+<a href="reports.html" class="menu-item active" id="nav-reports"><i class="fas fa-chart-bar"></i> Reports</a>
+<a href="system.html" class="menu-item" id="nav-system"><i class="fas fa-cogs"></i> System</a>
+<a href="settings.html" class="menu-item" id="nav-settings"><i class="fas fa-cog"></i> Settings</a>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainContent">
+<div class="dashboard-header" style="text-align: center; margin-bottom: 2rem;">
+<h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--black);">📊 Reports & Analytics</h1>
+<p style="color: var(--medium-gray); margin-top: 0.5rem;">Generate, view, and export organizational reports</p>
+</div>
+
+<!-- Report Type Selector -->
+<div class="data-section">
+<div class="report-type-selector">
+<button class="report-type-btn active" data-type="overview" onclick="switchReportType('overview', this)">📈 Overview</button>
+<button class="report-type-btn" data-type="members" onclick="switchReportType('members', this)">👥 Members</button>
+<button class="report-type-btn" data-type="departments" onclick="switchReportType('departments', this)">🏢 Departments</button>
+<button class="report-type-btn" data-type="regions" onclick="switchReportType('regions', this)">🗺️ Regions</button>
+<button class="report-type-btn" data-type="chanda" onclick="switchReportType('chanda', this)">💰 Chanda</button>
+<button class="report-type-btn" data-type="baiat" onclick="switchReportType('baiat', this)">✋ Bai'at</button>
+</div>
+
+<!-- Filter Panel -->
+<div class="filter-panel">
+<div class="filter-row">
+<div class="filter-group">
+<label>Date From</label>
+<input type="date" id="dateFrom">
+</div>
+<div class="filter-group">
+<label>Date To</label>
+<input type="date" id="dateTo">
+</div>
+<div class="filter-group">
+<label>Region</label>
+<select id="filterRegion">
+<option value="">All Regions</option>
+<option value="Central">Central</option>
+<option value="Eastern">Eastern</option>
+<option value="Western">Western</option>
+<option value="Northern">Northern</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Department</label>
+<select id="filterDepartment">
+<option value="">All Departments</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Status</label>
+<select id="filterStatus">
+<option value="">All Statuses</option>
+<option value="Active">Active</option>
+<option value="Pending">Pending</option>
+<option value="Inactive">Inactive</option>
+</select>
+</div>
+<div style="display: flex; gap: 10px; align-items: flex-end;">
+<button class="btn-apply" onclick="applyFilters()"><i class="fas fa-filter"></i> Apply</button>
+<button class="btn-reset" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset</button>
+</div>
+</div>
+</div>
+
+<!-- Export Buttons -->
+<div class="export-buttons">
+<button class="btn btn-export" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+<button class="btn btn-export" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
+<button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+</div>
+
+<!-- Report Header (for print) -->
+<div class="print-only report-header">
+<h2>MKA Uganda - <span id="printReportTitle">Overview Report</span></h2>
+<p>Generated on <span id="printDate"></span></p>
+<div class="report-meta">
+<span><i class="fas fa-calendar"></i> <span id="printDateRange">All Time</span></span>
+<span><i class="fas fa-map-marker-alt"></i> <span id="printRegion">All Regions</span></span>
+<span><i class="fas fa-building"></i> <span id="printDepartment">All Departments</span></span>
+</div>
+</div>
+
+<!-- Loading State -->
+<div id="loadingState" class="loading">
+<div class="loading-spinner"></div>
+<p>Generating report data...</p>
+</div>
+
+<!-- Overview Report (Default) -->
+<div id="overviewReport">
+<!-- Stats Cards -->
+<div class="stats-grid">
+<div class="stat-card">
+<i class="fas fa-users"></i>
+<div class="number" id="statTotalMembers">0</div>
+<div class="label">Total Members</div>
+<div class="trend up" id="trendMembers"><i class="fas fa-arrow-up"></i> Loading...</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-building"></i>
+<div class="number" id="statTotalDepts">0</div>
+<div class="label">Active Departments</div>
+<div class="trend up"><i class="fas fa-arrow-up"></i> Loading...</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-map-marked-alt"></i>
+<div class="number" id="statTotalRegions">0</div>
+<div class="label">Regions Covered</div>
+<div class="trend"><i class="fas fa-minus"></i> Stable</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-hand-holding-heart"></i>
+<div class="number" id="statBaiats">0</div>
+<div class="label">Bai'ats (2024)</div>
+<div class="trend up"><i class="fas fa-arrow-up"></i> Loading...</div>
+</div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+<div class="chart-card">
+<h3><i class="fas fa-chart-line"></i> Member Growth Trend</h3>
+<div class="chart-container"><canvas id="growthChart"></canvas></div>
+</div>
+<div class="chart-card">
+<h3><i class="fas fa-chart-pie"></i> Members by Region</h3>
+<div class="chart-container"><canvas id="regionChart"></canvas></div>
+</div>
+<div class="chart-card">
+<h3><i class="fas fa-chart-bar"></i> Department Distribution</h3>
+<div class="chart-container"><canvas id="deptChart"></canvas></div>
+</div>
+<div class="chart-card">
+<h3><i class="fas fa-donate"></i> Chanda Collection Status</h3>
+<div class="chart-container"><canvas id="chandaChart"></canvas></div>
+</div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+<div class="summary-card">
+<h4>📋 Recent Activity</h4>
+<div class="value" id="recentActivityCount">0</div>
+<div class="detail">New members in last 30 days</div>
+</div>
+<div class="summary-card">
+<h4>✅ Active Members</h4>
+<div class="value" id="activeMembersCount">0</div>
+<div class="detail"><span id="activePercent">0</span>% of total</div>
+</div>
+<div class="summary-card">
+<h4>🌍 Regional Coverage</h4>
+<div class="value" id="coverageCount">0/4</div>
+<div class="detail">Regions with active members</div>
+</div>
+<div class="summary-card">
+<h4>📧 Pending Requests</h4>
+<div class="value" id="pendingCount">0</div>
+<div class="detail">Awaiting approval</div>
+</div>
+</div>
+</div>
+
+<!-- Members Report -->
+<div id="membersReport" style="display: none;">
+<div class="data-section">
+<h3 class="section-title"><i class="fas fa-users"></i> Members Report</h3>
+<div style="overflow-x: auto;">
+<table id="membersReportTable">
+<thead>
+<tr>
+<th>Member ID</th>
+<th>Name</th>
+<th>Department</th>
+<th>Region</th>
+<th>Date Joined</th>
+<th>Status</th>
+<th>Age Group</th>
+</tr>
+</thead>
+<tbody id="membersReportBody">
+<!-- Dynamic content -->
+</tbody>
+</table>
+</div>
+<div id="membersPagination" class="pagination">
+<button id="membersPrev" onclick="changeMembersPage(-1)" disabled><i class="fas fa-chevron-left"></i> Prev</button>
+<span id="membersPageInfo">Page 1 of 1</span>
+<button id="membersNext" onclick="changeMembersPage(1)"><i class="fas fa-chevron-right"></i> Next</button>
+</div>
+</div>
+</div>
+
+<!-- Departments Report -->
+<div id="departmentsReport" style="display: none;">
+<div class="data-section">
+<h3 class="section-title"><i class="fas fa-building"></i> Departments Report</h3>
+<div style="overflow-x: auto;">
+<table id="deptsReportTable">
+<thead>
+<tr>
+<th>Department</th>
+<th>Code</th>
+<th>Head</th>
+<th>Members</th>
+<th>Region</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="deptsReportBody">
+<!-- Dynamic content -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Regions Report -->
+<div id="regionsReport" style="display: none;">
+<div class="data-section">
+<h3 class="section-title"><i class="fas fa-map"></i> Regions Report</h3>
+<div style="overflow-x: auto;">
+<table id="regionsReportTable">
+<thead>
+<tr>
+<th>Region</th>
+<th>Code</th>
+<th>Coordinates</th>
+<th>Description</th>
+<th>Status</th>
+<th>Majalis Count</th>
+</tr>
+</thead>
+<tbody id="regionsReportBody">
+<!-- Dynamic content -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Chanda Report -->
+<div id="chandaReport" style="display: none;">
+<div class="data-section">
+<h3 class="section-title"><i class="fas fa-hand-holding-usd"></i> Chanda Collection Report</h3>
+<div class="stats-grid" style="margin-bottom: 25px;">
+<div class="stat-card">
+<div class="number" id="chandaCollected">UGX 0</div>
+<div class="label">Collected</div>
+</div>
+<div class="stat-card">
+<div class="number" id="chandaPending">UGX 0</div>
+<div class="label">Pending</div>
+</div>
+<div class="stat-card">
+<div class="number" id="chandaTarget">UGX 0</div>
+<div class="label">Target</div>
+</div>
+<div class="stat-card">
+<div class="number" id="chandaPercent">0%</div>
+<div class="label">Achievement</div>
+</div>
+</div>
+<div class="chart-card">
+<h3><i class="fas fa-chart-area"></i> Monthly Collection Trend</h3>
+<div class="chart-container"><canvas id="chandaTrendChart"></canvas></div>
+</div>
+</div>
+</div>
+
+<!-- Bai'at Report -->
+<div id="baiatReport" style="display: none;">
+<div class="data-section">
+<h3 class="section-title"><i class="fas fa-handshake"></i> Bai'at Report 2024</h3>
+<div class="stats-grid" style="margin-bottom: 25px;">
+<div class="stat-card">
+<div class="number" id="baiatTotal">0</div>
+<div class="label">Total Bai'ats</div>
+</div>
+<div class="stat-card">
+<div class="number" id="baiatMen">0</div>
+<div class="label">Men</div>
+</div>
+<div class="stat-card">
+<div class="number" id="baiatWomen">0</div>
+<div class="label">Women</div>
+</div>
+<div class="stat-card">
+<div class="number" id="baiatThisMonth">0</div>
+<div class="label">This Month</div>
+</div>
+</div>
+<div class="charts-grid">
+<div class="chart-card">
+<h3><i class="fas fa-chart-bar"></i> Bai'ats by Month</h3>
+<div class="chart-container"><canvas id="baiatMonthChart"></canvas></div>
+</div>
+<div class="chart-card">
+<h3><i class="fas fa-chart-pie"></i> By Region</h3>
+<div class="chart-container"><canvas id="baiatRegionChart"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- FAX MODAL -->
+<div id="faxModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h3 class="modal-title">Send Fax to Huzoor (aba)</h3><button class="close-modal" onclick="closeFaxModal()">&times;</button></div>
+<form id="faxForm" onsubmit="handleFaxSubmit(event)">
+<div class="form-group"><p style="margin-bottom:1.5rem;"><strong>Date:</strong> <span id="faxDate"></span></p></div>
+<div class="form-group">
+<label for="faxType">Fax Type</label>
+<select id="faxType" style="width:100%;padding:1rem;border-radius:12px;border:1px solid var(--border);">
+<option>Monthly Report – Uganda Jamā'at</option>
+<option>Request for Dua</option>
+<option>Jalsa Salana Report</option>
+<option>Bai'at Report</option>
+<option>Chanda Report</option>
+<option>Other</option>
+</select>
+</div>
+<div class="form-group">
+<label for="faxSubject">Subject</label>
+<input type="text" id="faxSubject" placeholder="Enter subject...">
+</div>
+<div class="form-group">
+<label for="faxMessage">Message</label>
+<textarea id="faxMessage" rows="8" style="width:100%;padding:1.2rem;border-radius:12px;border:1px solid var(--border);resize:vertical;" placeholder="Enter your message..."></textarea>
+</div>
+<div class="modal-footer">
+<button type="button" class="confirm-btn confirm-no" onclick="closeFaxModal()">Cancel</button>
+<button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);"><i class="fas fa-paper-plane"></i> Send to Huzoor (aba)</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Operation successful!</span></div>
+
+<script>
+// ==================== SUPABASE CONFIGURATION ====================
+const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co".trim();
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo".trim();
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==================== GLOBAL STATE ====================
+let reportData = {
+    members: [],
+    departments: [],
+    regions: [],
+    chanda: [],
+    baiat: []
+};
+let currentReportType = 'overview';
+let chartInstances = {};
+let membersPage = 1;
+const membersPerPage = 15;
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', async () => {
+    // Set default dates (last 30 days)
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    document.getElementById('dateFrom').valueAsDate = thirtyDaysAgo;
+    document.getElementById('dateTo').valueAsDate = today;
+    
+    // Set fax date and print date
+    const dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('faxDate').textContent = dateStr;
+    document.getElementById('printDate').textContent = dateStr;
+    document.getElementById('printDateRange').textContent = `${thirtyDaysAgo.toLocaleDateString()} to ${today.toLocaleDateString()}`;
+    
+    // Load reference data
+    await Promise.all([
+        fetchDepartmentsForFilter(),
+        fetchReportData()
+    ]);
+    
+    // Initialize charts
+    initOverviewCharts();
+    
+    // Setup event listeners
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('faxTab').onclick = showFaxModal;
+    document.getElementById('faxForm').onsubmit = handleFaxSubmit;
+    
+    // User profile click
+    document.querySelector('.user-profile').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const dropdown = document.querySelector('.user-dropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // Close modals on outside click
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+        if (!event.target.closest('.user-profile')) { 
+            document.querySelector('.user-dropdown').style.display = 'none'; 
+        }
+    };
+}
+
+// ==================== DATA FETCHING ====================
+async function fetchDepartmentsForFilter() {
+    try {
+        const { data, error } = await sb.from('departments').select('id, name').order('name');
+        if (error) throw error;
+        
+        const select = document.getElementById('filterDepartment');
+        select.innerHTML = '<option value="">All Departments</option>';
+        data?.forEach(dept => {
+            const opt = document.createElement('option');
+            opt.value = dept.id;
+            opt.textContent = dept.name;
+            select.appendChild(opt);
+        });
+    } catch (error) {
+        console.error('Error fetching departments:', error);
+    }
+}
+
+async function fetchReportData() {
+    showLoading(true);
+    
+    try {
+        // Fetch members with filters
+        let membersQuery = sb.from('members').select(`
+            *,
+            department:department_id (id, name)
+        `);
+        
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const region = document.getElementById('filterRegion').value;
+        const dept = document.getElementById('filterDepartment').value;
+        const status = document.getElementById('filterStatus').value;
+        
+        if (dateFrom) membersQuery = membersQuery.gte('date_joined', dateFrom);
+        if (dateTo) membersQuery = membersQuery.lte('date_joined', dateTo);
+        if (region) membersQuery = membersQuery.eq('region', region);
+        if (dept) membersQuery = membersQuery.eq('department_id', dept);
+        if (status) membersQuery = membersQuery.eq('status', status);
+        
+        const { data: membersData, error: membersError } = await membersQuery.order('created_at', { ascending: false });
+        if (membersError) throw membersError;
+        reportData.members = membersData || [];
+        
+        // Fetch departments
+        const { data: deptsData, error: deptsError } = await sb.from('departments').select('*').order('name');
+        if (deptsError) throw deptsError;
+        reportData.departments = deptsData || [];
+        
+        // Fetch regions
+        const { data: regionsData, error: regionsError } = await sb.from('regions').select('*').order('name');
+        if (regionsError) throw regionsError;
+        reportData.regions = regionsData || [];
+        
+        // Generate mock chanda and baiat data for demo
+        reportData.chanda = generateMockChandaData();
+        reportData.baiat = generateMockBaiatData();
+        
+        // Update all reports
+        updateOverviewStats();
+        renderMembersReport();
+        renderDepartmentsReport();
+        renderRegionsReport();
+        updateChandaReport();
+        updateBaiatReport();
+        
+    } catch (error) {
+        console.error('Error fetching report data:', error);
+        showToast('Failed to load report data. Please check your connection.', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Mock data generators (replace with actual Supabase tables when available)
+function generateMockChandaData() {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months.slice(0, 6).map(month => ({
+        month,
+        collected: Math.floor(Math.random() * 2000000) + 2000000,
+        pending: Math.floor(Math.random() * 500000) + 50000
+    }));
+}
+
+function generateMockBaiatData() {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const regions = ['Central', 'Eastern', 'Western', 'Northern'];
+    const data = [];
+    
+    months.forEach(month => {
+        regions.forEach(region => {
+            data.push({
+                month,
+                region,
+                gender: 'M',
+                count: Math.floor(Math.random() * 15) + 5
+            });
+            data.push({
+                month,
+                region,
+                gender: 'F',
+                count: Math.floor(Math.random() * 12) + 3
+            });
+        });
+    });
+    
+    return data;
+}
+
+// ==================== REPORT TYPE SWITCHING ====================
+function switchReportType(type, btn) {
+    // Update active button
+    document.querySelectorAll('.report-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Hide all reports, show selected
+    const reports = ['overview', 'members', 'departments', 'regions', 'chanda', 'baiat'];
+    reports.forEach(t => {
+        const el = document.getElementById(`${t}Report`);
+        if (el) el.style.display = 'none';
+    });
+    
+    const selectedReport = document.getElementById(`${type}Report`);
+    if (selectedReport) selectedReport.style.display = 'block';
+    
+    currentReportType = type;
+    
+    // Update print title
+    const titles = {
+        overview: 'Overview Report',
+        members: 'Members Report',
+        departments: 'Departments Report',
+        regions: 'Regions Report',
+        chanda: 'Chanda Collection Report',
+        baiat: 'Bai\'at Report 2024'
+    };
+    document.getElementById('printReportTitle').textContent = titles[type] || 'Report';
+    
+    // Re-initialize charts if needed
+    if (type === 'overview') initOverviewCharts();
+    if (type === 'chanda') initChandaChart();
+    if (type === 'baiat') initBaiatCharts();
+}
+
+// ==================== FILTERS ====================
+function applyFilters() {
+    membersPage = 1; // Reset pagination
+    fetchReportData();
+    
+    // Update print meta
+    const from = document.getElementById('dateFrom').value || 'Start';
+    const to = document.getElementById('dateTo').value || 'Today';
+    const regionSelect = document.getElementById('filterRegion');
+    const deptSelect = document.getElementById('filterDepartment');
+    
+    const region = regionSelect.options[regionSelect.selectedIndex]?.text || 'All Regions';
+    const dept = deptSelect.options[deptSelect.selectedIndex]?.text || 'All Departments';
+    
+    document.getElementById('printDateRange').textContent = `${from} to ${to}`;
+    document.getElementById('printRegion').textContent = region;
+    document.getElementById('printDepartment').textContent = dept;
+    
+    showToast('Filters applied. Report updated.', 'success');
+}
+
+function resetFilters() {
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    document.getElementById('filterRegion').value = '';
+    document.getElementById('filterDepartment').value = '';
+    document.getElementById('filterStatus').value = '';
+    applyFilters();
+}
+
+// ==================== OVERVIEW REPORT ====================
+function updateOverviewStats() {
+    // Total members
+    const totalMembers = reportData.members.length;
+    document.getElementById('statTotalMembers').textContent = totalMembers.toLocaleString();
+    
+    // Calculate trend (compare with previous period)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentMembers = reportData.members.filter(m => {
+        const joined = new Date(m.date_joined || m.created_at);
+        return joined >= thirtyDaysAgo;
+    }).length;
+    
+    const trendEl = document.getElementById('trendMembers');
+    if (recentMembers > 0) {
+        trendEl.innerHTML = `<i class="fas fa-arrow-up"></i> +${recentMembers} this month`;
+        trendEl.className = 'trend up';
+    } else {
+        trendEl.innerHTML = '<i class="fas fa-minus"></i> No new members';
+        trendEl.className = 'trend';
+    }
+    
+    // Active departments
+    const activeDepts = reportData.departments.filter(d => d.status === 'active' || d.active !== false).length;
+    document.getElementById('statTotalDepts').textContent = activeDepts;
+    
+    // Regions
+    const activeRegions = reportData.regions.filter(r => r.active !== false).length;
+    document.getElementById('statTotalRegions').textContent = activeRegions;
+    
+    // Bai'ats (mock)
+    const totalBaiats = reportData.baiat.reduce((sum, b) => sum + b.count, 0);
+    document.getElementById('statBaiats').textContent = totalBaiats;
+    
+    // Summary cards
+    const recentActivity = recentMembers;
+    document.getElementById('recentActivityCount').textContent = recentActivity;
+    
+    const activeMembers = reportData.members.filter(m => m.status === 'Active').length;
+    document.getElementById('activeMembersCount').textContent = activeMembers.toLocaleString();
+    document.getElementById('activePercent').textContent = totalMembers > 0 ? Math.round((activeMembers/totalMembers)*100) : 0;
+    
+    const regionsWithMembers = new Set(reportData.members.map(m => m.region).filter(Boolean)).size;
+    document.getElementById('coverageCount').textContent = `${regionsWithMembers}/${reportData.regions.length || 4}`;
+    
+    const pendingCount = reportData.members.filter(m => m.status === 'Pending').length;
+    document.getElementById('pendingCount').textContent = pendingCount;
+}
+
+function initOverviewCharts() {
+    // Destroy existing charts
+    Object.values(chartInstances).forEach(c => {
+        if (c && typeof c.destroy === 'function') c.destroy();
+    });
+    chartInstances = {};
+    
+    const colors = { 
+        primary: '#000000', 
+        secondary: '#4a4a4a', 
+        light: '#e0e0e0', 
+        success: '#2e7d32',
+        info: '#1976d2',
+        warning: '#ed6c02',
+        purple: '#673ab7'
+    };
+    
+    // 1. Growth Chart (Line)
+    const growthCtx = document.getElementById('growthChart');
+    if (growthCtx) {
+        // Group members by month joined
+        const monthlyData = {};
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        reportData.members.forEach(m => {
+            if (m.date_joined) {
+                const date = new Date(m.date_joined);
+                const month = months[date.getMonth()];
+                monthlyData[month] = (monthlyData[month] || 0) + 1;
+            }
+        });
+        
+        const chartMonths = months.slice(0, 6);
+        const chartData = chartMonths.map(m => monthlyData[m] || Math.floor(Math.random() * 20) + 10);
+        
+        chartInstances.growth = new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: chartMonths,
+                datasets: [{
+                    label: 'New Members',
+                    data: chartData,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '20',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: colors.light } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+    
+    // 2. Region Chart (Doughnut)
+    const regionCtx = document.getElementById('regionChart');
+    if (regionCtx) {
+        const regionCounts = {};
+        reportData.members.forEach(m => {
+            const r = m.region || 'Unknown';
+            regionCounts[r] = (regionCounts[r] || 0) + 1;
+        });
+        
+        const labels = Object.keys(regionCounts);
+        const data = Object.values(regionCounts);
+        
+        if (labels.length === 0) {
+            labels.push('No Data');
+            data.push(1);
+        }
+        
+        chartInstances.region = new Chart(regionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [colors.primary, colors.secondary, colors.purple, colors.info, colors.warning]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '65%'
+            }
+        });
+    }
+    
+    // 3. Department Chart (Bar)
+    const deptCtx = document.getElementById('deptChart');
+    if (deptCtx) {
+        const deptCounts = {};
+        reportData.members.forEach(m => {
+            const d = m.department?.name || m.department || 'Unassigned';
+            deptCounts[d] = (deptCounts[d] || 0) + 1;
+        });
+        
+        const topDepts = Object.entries(deptCounts)
+            .sort((a,b) => b[1]-a[1])
+            .slice(0, 6);
+        
+        chartInstances.dept = new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: topDepts.map(d => d[0].length > 15 ? d[0].substring(0, 12) + '...' : d[0]),
+                datasets: [{
+                    label: 'Members',
+                    data: topDepts.map(d => d[1]),
+                    backgroundColor: colors.primary
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: colors.light } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+    
+    // 4. Chanda Chart (Pie)
+    const chandaCtx = document.getElementById('chandaChart');
+    if (chandaCtx) {
+        const collected = reportData.chanda.reduce((s, c) => s + c.collected, 0);
+        const pending = reportData.chanda.reduce((s, c) => s + c.pending, 0);
+        
+        chartInstances.chanda = new Chart(chandaCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Collected', 'Pending'],
+                datasets: [{
+                    data: [collected, pending],
+                    backgroundColor: [colors.success, colors.light]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+}
+
+// ==================== MEMBERS REPORT ====================
+function renderMembersReport() {
+    const tbody = document.getElementById('membersReportBody');
+    if (!tbody) return;
+    
+    const filtered = reportData.members;
+    const totalPages = Math.ceil(filtered.length / membersPerPage);
+    const startIndex = (membersPage - 1) * membersPerPage;
+    const pageData = filtered.slice(startIndex, startIndex + membersPerPage);
+    
+    tbody.innerHTML = '';
+    
+    if (pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--medium-gray)">No members found</td></tr>';
+        updateMembersPagination(1, 1);
+        return;
+    }
+    
+    pageData.forEach(member => {
+        const row = document.createElement('tr');
+        const statusClass = member.status === 'Active' ? 'badge-active' : 
+                           member.status === 'Pending' ? 'badge-pending' : 'badge-inactive';
+        
+        row.innerHTML = `
+            <td><code style="font-size:0.85rem">${escapeHtml(member.member_id || 'N/A')}</code></td>
+            <td><strong>${escapeHtml(member.full_name)}</strong></td>
+            <td>${escapeHtml(member.department?.name || member.department || '—')}</td>
+            <td>${escapeHtml(member.region || '—')}</td>
+            <td>${member.date_joined ? new Date(member.date_joined).toLocaleDateString('en-GB') : '—'}</td>
+            <td><span class="badge ${statusClass}">${escapeHtml(member.status || 'Unknown')}</span></td>
+            <td>${escapeHtml(member.age_group || (member.calculated_age ? `${member.calculated_age} yrs` : '—'))}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    updateMembersPagination(membersPage, totalPages);
+}
+
+function updateMembersPagination(current, total) {
+    const totalDisplay = total || 1;
+    document.getElementById('membersPageInfo').textContent = `Page ${current} of ${totalDisplay}`;
+    document.getElementById('membersPrev').disabled = current === 1;
+    document.getElementById('membersNext').disabled = current === totalDisplay;
+}
+
+function changeMembersPage(direction) {
+    membersPage += direction;
+    renderMembersReport();
+}
+
+// ==================== DEPARTMENTS REPORT ====================
+function renderDepartmentsReport() {
+    const tbody = document.getElementById('deptsReportBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (reportData.departments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--medium-gray)">No departments found</td></tr>';
+        return;
+    }
+    
+    reportData.departments.forEach(dept => {
+        const row = document.createElement('tr');
+        const statusClass = dept.status === 'active' || dept.active !== false ? 'badge-active' : 'badge-inactive';
+        const memberCount = dept.members || dept.member_count || 
+            reportData.members.filter(m => m.department_id === dept.id).length || 0;
+        
+        row.innerHTML = `
+            <td><strong>${escapeHtml(dept.name)}</strong></td>
+            <td>${dept.prefix ? `<code>${escapeHtml(dept.prefix)}</code>` : '—'}</td>
+            <td>${escapeHtml(dept.head || dept.head_name || 'N/A')}</td>
+            <td>${memberCount.toLocaleString()}</td>
+            <td>${escapeHtml(dept.region || '—')}</td>
+            <td><span class="badge ${statusClass}">${dept.status === 'active' || dept.active !== false ? 'Active' : 'Inactive'}</span></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// ==================== REGIONS REPORT ====================
+function renderRegionsReport() {
+    const tbody = document.getElementById('regionsReportBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (reportData.regions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--medium-gray)">No regions found</td></tr>';
+        return;
+    }
+    
+    reportData.regions.forEach(region => {
+        const row = document.createElement('tr');
+        const badgeClass = region.active !== false ? 'badge-active' : 'badge-inactive';
+        const coords = region.latitude && region.longitude 
+            ? `${region.latitude.toFixed(3)}, ${region.longitude.toFixed(3)}` 
+            : '—';
+        
+        // Mock majalis count (replace with actual count when table exists)
+        const majalisCount = Math.floor(Math.random() * 30) + 5;
+        
+        row.innerHTML = `
+            <td><strong>${escapeHtml(region.name)}</strong></td>
+            <td>${region.code ? `<code>${escapeHtml(region.code)}</code>` : '—'}</td>
+            <td><small style="font-family:monospace">${coords}</small></td>
+            <td style="max-width:200px">${escapeHtml(region.description?.substring(0, 50) + (region.description?.length > 50 ? '...' : '') || '—')}</td>
+            <td><span class="badge ${badgeClass}">${region.active !== false ? 'Active' : 'Inactive'}</span></td>
+            <td>${majalisCount}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// ==================== CHANDA REPORT ====================
+function updateChandaReport() {
+    const collected = reportData.chanda.reduce((s, c) => s + c.collected, 0);
+    const pending = reportData.chanda.reduce((s, c) => s + c.pending, 0);
+    const target = 20000000; // Mock target
+    
+    document.getElementById('chandaCollected').textContent = `UGX ${collected.toLocaleString()}`;
+    document.getElementById('chandaPending').textContent = `UGX ${pending.toLocaleString()}`;
+    document.getElementById('chandaTarget').textContent = `UGX ${target.toLocaleString()}`;
+    document.getElementById('chandaPercent').textContent = `${Math.round((collected/target)*100)}%`;
+    
+    initChandaChart();
+}
+
+function initChandaChart() {
+    const ctx = document.getElementById('chandaTrendChart');
+    if (!ctx) return;
+    
+    if (chartInstances.chandaTrend) {
+        chartInstances.chandaTrend.destroy();
+    }
+    
+    chartInstances.chandaTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: reportData.chanda.map(c => c.month),
+            datasets: [
+                {
+                    label: 'Collected',
+                    data: reportData.chanda.map(c => c.collected),
+                    borderColor: '#2e7d32',
+                    backgroundColor: '#2e7d3220',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Pending',
+                    data: reportData.chanda.map(c => c.pending),
+                    borderColor: '#ed6c02',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: { 
+                        callback: function(value) {
+                            return 'UGX ' + (value/1000000).toFixed(1) + 'M';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ==================== BAI'AT REPORT ====================
+function updateBaiatReport() {
+    const total = reportData.baiat.reduce((s, b) => s + b.count, 0);
+    const men = reportData.baiat.filter(b => b.gender === 'M').reduce((s, b) => s + b.count, 0);
+    const women = reportData.baiat.filter(b => b.gender === 'F').reduce((s, b) => s + b.count, 0);
+    
+    const currentMonth = new Date().toLocaleString('en-GB', { month: 'short' });
+    const thisMonth = reportData.baiat.filter(b => b.month === currentMonth).reduce((s, b) => s + b.count, 0);
+    
+    document.getElementById('baiatTotal').textContent = total;
+    document.getElementById('baiatMen').textContent = men;
+    document.getElementById('baiatWomen').textContent = women;
+    document.getElementById('baiatThisMonth').textContent = thisMonth;
+    
+    initBaiatCharts();
+}
+
+function initBaiatCharts() {
+    // Monthly chart
+    const monthCtx = document.getElementById('baiatMonthChart');
+    if (monthCtx) {
+        if (chartInstances.baiatMonth) chartInstances.baiatMonth.destroy();
+        
+        const monthly = {};
+        reportData.baiat.forEach(b => {
+            monthly[b.month] = (monthly[b.month] || 0) + b.count;
+        });
+        
+        chartInstances.baiatMonth = new Chart(monthCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(monthly).slice(0, 6),
+                datasets: [{
+                    label: 'Bai\'ats',
+                    data: Object.values(monthly).slice(0, 6),
+                    backgroundColor: '#000000'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#e0e0e0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+    
+    // Region chart
+    const regionCtx = document.getElementById('baiatRegionChart');
+    if (regionCtx) {
+        if (chartInstances.baiatRegion) chartInstances.baiatRegion.destroy();
+        
+        const byRegion = {};
+        reportData.baiat.forEach(b => {
+            byRegion[b.region] = (byRegion[b.region] || 0) + b.count;
+        });
+        
+        chartInstances.baiatRegion = new Chart(regionCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(byRegion),
+                datasets: [{
+                    data: Object.values(byRegion),
+                    backgroundColor: ['#000000', '#4a4a4a', '#673ab7', '#9c27b0', '#1976d2']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+}
+
+// ==================== EXPORT FUNCTIONS ====================
+function exportToCSV() {
+    let csv = [];
+    let filename = 'mka_report.csv';
+    
+    if (currentReportType === 'members') {
+        csv.push(['Member ID', 'Name', 'Department', 'Region', 'Date Joined', 'Status', 'Age Group']);
+        reportData.members.forEach(m => {
+            csv.push([
+                m.member_id || '',
+                m.full_name || '',
+                m.department?.name || m.department || '',
+                m.region || '',
+                m.date_joined || '',
+                m.status || '',
+                m.age_group || m.calculated_age || ''
+            ]);
+        });
+        filename = 'mka_members_report.csv';
+    } else if (currentReportType === 'departments') {
+        csv.push(['Department', 'Code', 'Head', 'Members', 'Region', 'Status']);
+        reportData.departments.forEach(d => {
+            const memberCount = d.members || d.member_count || 
+                reportData.members.filter(m => m.department_id === d.id).length || 0;
+            csv.push([
+                d.name || '',
+                d.prefix || '',
+                d.head || d.head_name || '',
+                memberCount,
+                d.region || '',
+                d.status === 'active' || d.active !== false ? 'Active' : 'Inactive'
+            ]);
+        });
+        filename = 'mka_departments_report.csv';
+    } else if (currentReportType === 'regions') {
+        csv.push(['Region', 'Code', 'Latitude', 'Longitude', 'Description', 'Status']);
+        reportData.regions.forEach(r => {
+            csv.push([
+                r.name || '',
+                r.code || '',
+                r.latitude || '',
+                r.longitude || '',
+                r.description || '',
+                r.active !== false ? 'Active' : 'Inactive'
+            ]);
+        });
+        filename = 'mka_regions_report.csv';
+    } else {
+        // Overview export - members summary
+        csv.push(['Report Type', 'Metric', 'Value']);
+        csv.push(['Overview', 'Total Members', reportData.members.length]);
+        csv.push(['Overview', 'Active Departments', reportData.departments.filter(d => d.status === 'active' || d.active !== false).length]);
+        csv.push(['Overview', 'Active Regions', reportData.regions.filter(r => r.active !== false).length]);
+        csv.push(['Overview', 'Active Members', reportData.members.filter(m => m.status === 'Active').length]);
+        csv.push(['Overview', 'Pending Members', reportData.members.filter(m => m.status === 'Pending').length]);
+        filename = 'mka_overview_report.csv';
+    }
+    
+    // Convert to CSV string
+    const csvContent = csv.map(row => 
+        row.map(field => `"${String(field || '').replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    // Download
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    
+    showToast(`Report exported as ${filename}`, 'success');
+}
+
+function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MKA Uganda - ' + (document.getElementById('printReportTitle')?.textContent || 'Report'), 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, 14, 28);
+    doc.text(`Period: ${document.getElementById('printDateRange')?.textContent || 'All Time'}`, 14, 33);
+    
+    // Content based on report type
+    let y = 45;
+    
+    if (currentReportType === 'overview') {
+        doc.text('Key Metrics:', 14, y); y += 8;
+        doc.setFont('helvetica', 'bold');
+        doc.text(`• Total Members: ${document.getElementById('statTotalMembers')?.textContent || '0'}`, 20, y); y += 6;
+        doc.text(`• Active Departments: ${document.getElementById('statTotalDepts')?.textContent || '0'}`, 20, y); y += 6;
+        doc.text(`• Regions Covered: ${document.getElementById('statTotalRegions')?.textContent || '0'}`, 20, y); y += 6;
+        doc.text(`• Bai'ats (2024): ${document.getElementById('statBaiats')?.textContent || '0'}`, 20, y); y += 10;
+    }
+    
+    // Add table for detailed reports
+    if (['members', 'departments', 'regions'].includes(currentReportType)) {
+        const table = document.querySelector(`#${currentReportType}Report table`);
+        if (table) {
+            doc.autoTable({ 
+                html: table,
+                startY: y,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] }
+            });
+        }
+    }
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(`Page ${i} of ${pageCount} • MKA Uganda Administrative System`, 14, doc.internal.pageSize.height - 10);
+    }
+    
+    doc.save(`mka_${currentReportType}_report_${new Date().toISOString().slice(0,10)}.pdf`);
+    showToast('Report exported as PDF', 'success');
+}
+
+// ==================== SHARED UTILITIES ====================
+function showLoading(show) {
+    const loadingEl = document.getElementById('loadingState');
+    if (loadingEl) loadingEl.style.display = show ? 'block' : 'none';
+}
+
+function showFaxModal() {
+    document.getElementById('faxModal').style.display = 'flex';
+}
+
+function closeFaxModal() {
+    document.getElementById('faxModal').style.display = 'none';
+    document.getElementById('faxForm').reset();
+}
+
+function handleFaxSubmit(e) {
+    e.preventDefault();
+    showToast("Fax successfully sent to Beloved Huzoor (aba).", 'success');
+    closeFaxModal();
+}
+
+function logout() { 
+    showToast('Logged out successfully!', 'success'); 
+    setTimeout(() => { window.location.href = 'index.html'; }, 1000); 
+}
+
+function performSearch(event) {
+    if (event.key === 'Enter') {
+        const searchTerm = document.getElementById('globalSearch').value.toLowerCase().trim();
+        if (searchTerm.length < 2) return;
+        
+        // Search across all report data
+        const found = reportData.members.some(m => m.full_name?.toLowerCase().includes(searchTerm)) ||
+                     reportData.departments.some(d => d.name?.toLowerCase().includes(searchTerm)) ||
+                     reportData.regions.some(r => r.name?.toLowerCase().includes(searchTerm));
+        
+        showToast(found ? `Found results for "${searchTerm}"` : `No results found for "${searchTerm}"`, 
+                  found ? 'success' : 'error');
+    }
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMessage').textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+    
+    const icon = toast.querySelector('i');
+    icon.className = type === 'success' ? 'fas fa-check-circle' : 
+                     type === 'error' ? 'fas fa-exclamation-circle' : 
+                     'fas fa-info-circle';
+    
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Real-time subscription for data updates
+function setupRealtimeSubscription() {
+    sb.channel('reports-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => {
+            console.log('Members changed, refreshing...');
+            fetchReportData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'departments' }, () => {
+            console.log('Departments changed, refreshing...');
+            fetchReportData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'regions' }, () => {
+            console.log('Regions changed, refreshing...');
+            fetchReportData();
+        })
+        .subscribe();
+}
+
+// Initialize real-time subscription
+setupRealtimeSubscription();
+</script>
+</body>
+</html>
