@@ -6,12 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Font Awesome, Chart.js -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css ">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js "></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
 *{box-sizing:border-box; margin:0; padding:0}
-body{font-family:'Segoe UI',Roboto,sans-serif; background:#f4f6f9; padding:20px}
+body{font-family:'Segoe UI',Roboto,sans-serif; background:#f4f6f9; padding:20px; color:#1e3f5f}
 .container{max-width:1400px; margin:0 auto}
 
 /* header */
@@ -21,12 +21,16 @@ header{
   display:flex; gap:18px; align-items:center;
   box-shadow:0 8px 18px rgba(0,20,30,0.06);
 }
-header i{font-size:3rem; color:#1e3c5c; filter:drop-shadow(0 2px 4px rgba(0,60,120,0.2));}
-header h2{font-weight:600; color:#0b2a41; letter-spacing:-0.02em;}
-header small{color:#3a5e7a; font-size:0.9rem;}
+header .logo{
+  width:56px; height:56px; border-radius:16px; object-fit:cover;
+  border:3px solid #1e3f5f; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  flex-shrink:0;
+}
+header h2{font-weight:600; color:#0b2a41; letter-spacing:-0.02em; font-size:1.5rem; line-height:1.2}
+header small{color:#3a5e7a; font-size:0.9rem; display:block; margin-top:4px}
 
 /* layout */
-.layout{display:grid; grid-template-columns:260px 1fr; gap:24px;}
+.layout{display:grid; grid-template-columns:260px 1fr; gap:24px}
 
 /* sidebar */
 aside{
@@ -40,11 +44,11 @@ aside a{
   color:#1e3b5c; font-weight:500; margin-bottom:6px;
   transition:all 0.15s ease; cursor:pointer;
 }
-aside a i{width:22px; font-size:1.2rem;}
+aside a i{width:22px; font-size:1.2rem}
 aside a:hover, aside a.active{
   background:#1d4d7c; color:#ffffff; box-shadow:0 6px 14px rgba(27,85,140,0.3);
 }
-aside a.active{background:#113753;}
+aside a.active{background:#113753}
 
 /* main panel */
 main{
@@ -54,13 +58,8 @@ main{
 }
 
 /* Page content */
-.page {
-  display: none;
-}
-
-.page.active-page {
-  display: block;
-}
+.page { display: none; }
+.page.active-page { display: block; }
 
 /* quick action cards */
 .quick-actions{
@@ -75,11 +74,11 @@ main{
   transition:all 0.2s ease; border:1px solid #ffffff60;
   backdrop-filter:blur(4px); color:#1f3c5a;
 }
-.qa-msg{background:#e3f0fd; border-color:#9ac7ff;}
-.qa-rem{background:#fff0cf; border-color:#ffd98c;}
-.qa-evt{background:#e0f3e5; border-color:#a8e0b7;}
-.qa-rep{background:#efe6fd; border-color:#ccb5ff;}
-.quick-actions button:hover{transform:translateY(-3px); box-shadow:0 12px 22px rgba(0,30,60,0.12);}
+.qa-msg{background:#e3f0fd; border-color:#9ac7ff}
+.qa-rem{background:#fff0cf; border-color:#ffd98c}
+.qa-evt{background:#e0f3e5; border-color:#a8e0b7}
+.qa-rep{background:#efe6fd; border-color:#ccb5ff}
+.quick-actions button:hover{transform:translateY(-3px); box-shadow:0 12px 22px rgba(0,30,60,0.12)}
 
 /* stats cards */
 .stats{
@@ -91,8 +90,8 @@ main{
   color:white; padding:22px 14px; border-radius:26px; text-align:center;
   box-shadow:0 16px 28px -8px #1d3f5e60;
 }
-.stat i{font-size:2.4rem; opacity:0.95; margin-bottom:10px;}
-.stat .number{font-size:2.1rem; font-weight:700; letter-spacing:1px;}
+.stat i{font-size:2.4rem; opacity:0.95; margin-bottom:10px}
+.stat .number{font-size:2.1rem; font-weight:700; letter-spacing:1px}
 
 /* charts grid */
 .charts{
@@ -104,7 +103,7 @@ main{
   box-shadow:inset 0 1px 3px #ffffff, 0 8px 18px rgba(0,20,40,0.04);
   border:1px solid rgba(148, 184, 218, 0.2);
 }
-.chart-box h4{text-align:center; color:#203f5c; font-weight:500; margin-bottom:12px;}
+.chart-box h4{text-align:center; color:#203f5c; font-weight:500; margin-bottom:12px}
 
 /* Page-specific styles */
 .members-grid {
@@ -122,10 +121,7 @@ main{
   border: 1px solid rgba(148, 184, 218, 0.2);
 }
 
-.member-card h3 {
-  color: #1e3f5f;
-  margin-bottom: 8px;
-}
+.member-card h3 { color: #1e3f5f; margin-bottom: 8px }
 
 .member-card .badge {
   display: inline-block;
@@ -136,15 +132,8 @@ main{
   margin-top: 10px;
 }
 
-.badge.active {
-  background: #c8e6c9;
-  color: #256029;
-}
-
-.badge.inactive {
-  background: #ffcdd2;
-  color: #c63737;
-}
+.badge.active { background: #c8e6c9; color: #256029 }
+.badge.inactive { background: #ffcdd2; color: #c63737 }
 
 .scan-history {
   background: #f8faff;
@@ -159,10 +148,7 @@ main{
   padding: 12px;
   border-bottom: 1px solid #e0e9f0;
 }
-
-.scan-item:last-child {
-  border-bottom: none;
-}
+.scan-item:last-child { border-bottom: none }
 
 .region-grid {
   display: grid;
@@ -179,16 +165,8 @@ main{
   text-align: center;
 }
 
-.region-card h3 {
-  margin-bottom: 10px;
-  font-size: 1.3rem;
-}
-
-.region-card .count {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 10px 0;
-}
+.region-card h3 { margin-bottom: 10px; font-size: 1.3rem }
+.region-card .count { font-size: 2.5rem; font-weight: 700; margin: 10px 0 }
 
 .activity-log {
   background: #f8faff;
@@ -204,19 +182,11 @@ main{
   border-bottom: 1px solid #e0e9f0;
 }
 
-.log-entry i {
-  width: 30px;
-  color: #1e3f5f;
-}
+.log-entry i { width: 30px; color: #1e3f5f }
 
-.settings-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
+.settings-form { max-width: 600px; margin: 0 auto }
 
-.settings-group {
-  margin-bottom: 30px;
-}
+.settings-group { margin-bottom: 30px }
 
 .settings-group h3 {
   color: #1e3f5f;
@@ -249,22 +219,57 @@ main{
   box-shadow:0 40px 60px rgba(0,15,40,0.4);
   border:1px solid #b9d4f0;
 }
-.modal h3{margin-bottom:16px; color:#113853;}
+.modal h3{margin-bottom:16px; color:#113853}
 .modal input,.modal textarea,.modal select{
   width:100%; padding:14px 18px; margin-bottom:14px;
-  border:1px solid #c4d7ec; border-radius:40px; font-size:0.95rem;
-  background:#f4faff; outline:none;
+  border:2px solid #d1e3f3; border-radius:40px; font-size:0.95rem;
+  background:#f8fafc; outline:none; color:#1e3f5f;
+  transition:border-color 0.2s;
 }
-.modal textarea{border-radius:28px; resize:vertical;}
+.modal input:focus,.modal textarea:focus,.modal select:focus{
+  border-color:#1d4d7c; box-shadow:0 0 0 3px rgba(29,77,124,0.15); background:white
+}
+.modal textarea{border-radius:28px; resize:vertical}
 .modal button{
   width:100%; padding:16px; border:none; border-radius:50px;
-  background:#1b4f7c; color:#fff; font-weight:700; font-size:1rem;
+  background:linear-gradient(145deg,#1e3f5f,#2c5a85); color:#fff; font-weight:700; font-size:1rem;
   cursor:pointer; transition:0.15s; margin-top:4px;
 }
-.modal button:hover{background:#0f3d60;}
+.modal button:hover{transform:translateY(-2px); box-shadow:0 10px 20px rgba(29,77,124,0.3)}
 
 /* micro */
-#lastScan{font-size:1.1rem; word-break:break-word;}
+#lastScan{font-size:1.1rem; word-break:break-word}
+
+/* Toggle switch for settings */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+.switch input { opacity: 0; width: 0; height: 0 }
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px; width: 26px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider { background-color: #1d4d7c }
+input:checked + .slider:before { transform: translateX(26px) }
+
+/* Chart canvas sizing */
+.chart-box canvas { max-height: 200px; width:100% !important; height: auto !important }
 </style>
 </head>
 <body>
@@ -272,22 +277,21 @@ main{
 <div class="container">
 
 <header>
-  <i class="fas fa-shield-halved"></i>
+  <img src="https://avatars.githubusercontent.com/u/214355993?v=4" alt="Umoomi Logo" class="logo" onerror="this.src='https://via.placeholder.com/56x56?text=UM'">
   <div>
     <h2>Umoomi Security System</h2>
-    <small>Ahmadiyya Muslim Community Uganda · central dashboard</small>
+    <small>Majlis Khuddamul Ahmadiyya Uganda · central dashboard</small>
   </div>
 </header>
 
 <div class="layout">
 
 <aside>
-  <a href="index.html" class="active" id="nav-dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+  <a href="#" onclick="switchPage('dashboard')" class="active" id="nav-dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
   <a href="u-members.html" id="nav-members"><i class="fas fa-people-group"></i> Members</a>
   <a href="u-scanner.html" id="nav-scan"><i class="fas fa-qrcode"></i> Scan ID</a>
   <a href="u-regions.html" id="nav-regions"><i class="fas fa-map-locations"></i> Regions</a>
   <a href="u-scan-logs.html" id="nav-logs"><i class="fas fa-clock-rotate-left"></i> Activity logs</a>
-  <a href="u-admin.html" id="nav-logs"><i class="fas fa-clock-rotate-left"></i> Admin Panel</a>
   <a href="u-settings.html" id="nav-settings"><i class="fas fa-gear"></i> Settings</a>
 </aside>
 
@@ -400,10 +404,9 @@ main{
     </div>
   </div>
 </main>
-</div> <!-- .layout -->
-</div> <!-- .container -->
+</div>
 
-<!-- modals (keep these outside pages as they're global) -->
+<!-- modals (global) -->
 <div id="backdrop" class="modal-backdrop"></div>
 <div id="msgModal" class="modal">
   <h3>✉️ Send message</h3>
@@ -479,7 +482,7 @@ function loadPageData(pageName) {
   }
 }
 
-// Mock data (keeping your existing mock data)
+// Mock data
 const mockMembers = [
   { id: 1, name: "Ahmad Kibirige", status: "Active", region: "Kampala", lastScan: "2024-01-15" },
   { id: 2, name: "Fatuma Nakawojja", status: "Active", region: "Kampala", lastScan: "2024-01-14" },
@@ -688,62 +691,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
   };
   backdrop.onclick = closeModals;
+  
+  // Set active nav for dashboard on load
+  document.getElementById('nav-dashboard').classList.add('active');
 });
-
 </script>
-
-<!-- extra style for charts and lastScan -->
-<style>
-#lastScan { font-size: 1.1rem; line-height: 1.2; }
-.stat .number { text-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-.chart-box canvas { max-height: 200px; width:100% !important; height: auto !important; }
-
-/* Toggle switch for settings */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #1d4d7c;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-</style>
 
 </body>
 </html>
