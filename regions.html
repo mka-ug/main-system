@@ -1,1903 +1,2006 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKA Uganda • Regions Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- Leaflet for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { 
-            --black: #000000; 
-            --dark-gray: #1a1a1a; 
-            --medium-gray: #4a4a4a; 
-            --light-gray: #e0e0e0; 
-            --border: #cccccc; 
-            --white: #ffffff; 
-            --off-white: #fafafa; 
-            --danger: #cc0000; 
-            --success: #2e7d32; 
-            --warning: #ed6c02; 
-            --info: #1976d2;
-            --gold: #c5a028;
-            
-            /* Subtle color shades for rows */
-            --row-color-1: #f8f4e8; /* soft cream */
-            --row-color-2: #e8f0f8; /* soft blue */
-            --row-color-3: #f0e8f8; /* soft lavender */
-            --row-color-4: #e8f8f0; /* soft mint */
-            --row-color-5: #f8e8e8; /* soft pink */
-            --row-color-6: #f0f8e8; /* soft green */
-            --row-color-7: #f8f0e8; /* soft peach */
-            --row-color-8: #e8e8f8; /* soft periwinkle */
-            
-            /* Flexible column widths with minimums - removed location column */
-            --col-info-min: 250px;
-            --col-stats-min: 350px;
-            --col-status-min: 80px;
-            --col-actions-min: 90px;
-        }
-        
-        * { margin:0; padding:0; box-sizing:border-box; }
-        
-        body { 
-            font-family:'Libre Franklin',sans-serif; 
-            background:var(--off-white); 
-            color:var(--dark-gray); 
-            line-height: 1.6;
-        }
-        
-        /* Header */
-        header { 
-            position:fixed; 
-            top:0; 
-            left:0; 
-            right:0; 
-            height:90px; 
-            background:var(--white); 
-            border-bottom:1px solid var(--border); 
-            z-index:1000; 
-            box-shadow:0 4px 20px rgba(0,0,0,0.04); 
-        }
-        
-        .header-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 2rem; 
-            height: 100%; 
-        }
-        
-        .flag-banner { 
-            background: linear-gradient(to right, var(--black) 33%, var(--light-gray) 33%, var(--light-gray) 66%, var(--dark-gray) 66%); 
-            height: 6px; 
-            width: 100%; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-        }
-        
-        .logo-section { display: flex; align-items: center; gap: 15px; }
-        
-        .logo { 
-            font-family:'Cormorant Garamond',serif; 
-            font-size:2.2rem; 
-            color:var(--black); 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        
-        .logo-icon { 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            border: 2px solid var(--black); 
-        }
-        
-        .search-section { flex: 1; max-width: 500px; margin: 0 2rem; }
-        
-        .search-bar { 
-            width: 100%; 
-            padding: 12px 20px; 
-            border: 1px solid var(--border); 
-            border-radius: 30px; 
-            background: var(--white); 
-            font-size: 0.95rem; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-            transition: all 0.3s; 
-            color: var(--dark-gray); 
-        }
-        
-        .search-bar:focus { 
-            outline: none; 
-            border-color: var(--black); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-        }
-        
-        .user-section { display: flex; align-items: center; gap: 20px; }
-        
-        .fax-btn { 
-            background: var(--black); 
-            color: var(--white); 
-            border: 2px solid var(--black); 
-            padding: 10px 25px; 
-            border-radius: 30px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            transition: all 0.3s; 
-        }
-        
-        .fax-btn:hover { 
-            background: var(--white); 
-            color: var(--black); 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15); 
-        }
-        
-        .user-profile { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            font-weight: 500; 
-            cursor: pointer; 
-            position: relative; 
-        }
-        
-        .user-avatar { 
-            width: 50px; 
-            height: 50px; 
-            border-radius: 50%; 
-            background: var(--black); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.5rem; 
-            color: var(--white); 
-            font-weight: bold; 
-        }
-        
-        .user-info { text-align: right; }
-        .user-info strong { color: var(--black); font-size: 1rem; }
-        .user-info small { color: var(--medium-gray); font-size: 0.8rem; }
-        
-        .user-dropdown { 
-            position: absolute; 
-            top: 65px; 
-            right: 0; 
-            background: var(--white); 
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            padding: 15px 0; 
-            min-width: 200px; 
-            display: none; 
-            z-index: 1001; 
-            border: 1px solid var(--border); 
-        }
-        
-        .user-profile:hover .user-dropdown { display: block; }
-        
-        .dropdown-item { 
-            padding: 10px 20px; 
-            cursor: pointer; 
-            transition: background 0.2s; 
-            color: var(--dark-gray); 
-            text-decoration: none;
-            display: block;
-        }
-        
-        .dropdown-item:hover { 
-            background: var(--light-gray); 
-            color: var(--black); 
-        }
-        
-        /* Sidebar */
-        .sidebar { 
-            position: fixed; 
-            left: 0; 
-            top: 90px; 
-            bottom: 0; 
-            width: 280px; 
-            background: var(--white); 
-            border-right: 1px solid var(--border); 
-            padding-top: 2rem; 
-            box-shadow: 6px 0 20px rgba(0,0,0,0.03); 
-            overflow-y: auto; 
-        }
-        
-        .sidebar h3 { 
-            font-family: 'Cormorant Garamond', serif; 
-            font-size: 1.8rem; 
-            color: var(--black); 
-            text-align: center; 
-            margin-bottom: 2rem; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 1rem; 
-        }
-        
-        .menu-item { 
-            padding: 1.1rem 2rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 16px; 
-            color: var(--dark-gray); 
-            font-weight: 500; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            border-left: 3px solid transparent; 
-            text-decoration: none; 
-        }
-        
-        .menu-item:hover, .menu-item.active { 
-            background: var(--light-gray); 
-            color: var(--black); 
-            font-weight: 600; 
-            border-left-color: var(--black); 
-        }
-        
-        .menu-item i { color: var(--medium-gray); width: 20px; text-align: center; }
-        .menu-item:hover i, .menu-item.active i { color: var(--black); }
-        
-        /* Main Content */
-        .main { 
-            margin-left: 280px; 
-            padding: 130px 50px 100px; 
-            min-height: 100vh; 
-        }
-        
-        /* Page Header */
-        .page-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .page-header h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.5rem;
-            color: var(--black);
-            margin-bottom: 0.5rem;
-        }
-        
-        .page-header p {
-            color: var(--medium-gray);
-            font-size: 1.1rem;
-        }
-        
-        /* Stats Grid - 4 cards */
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 20px; 
-            margin-bottom: 30px; 
-        }
-        
-        .stat-card { 
-            background: var(--white); 
-            border-radius: 16px; 
-            padding: 25px; 
-            box-shadow: 0 10px 35px rgba(0,0,0,0.06); 
-            border: 1px solid var(--border); 
-            text-align: center; 
-            transition: transform 0.3s; 
-        }
-        
-        .stat-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); 
-        }
-        
-        .stat-card i { 
-            font-size: 3rem; 
-            color: var(--black); 
-            margin-bottom: 15px; 
-        }
-        
-        .stat-card .number { 
-            font-family: 'Cormorant Garamond', serif; 
-            font-size: 2.5rem; 
-            font-weight: 700; 
-            color: var(--black); 
-            margin: 10px 0; 
-        }
-        
-        .stat-card .label { 
-            color: var(--medium-gray); 
-            font-size: 0.95rem; 
-        }
-        
-        /* Action Buttons */
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .btn { 
-            padding: 10px 20px; 
-            border: 2px solid var(--black); 
-            border-radius: 6px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 8px; 
-            transition: all 0.3s ease; 
-            font-size: 0.95rem; 
-            background: var(--white); 
-            color: var(--black); 
-            text-decoration: none; 
-        }
-        
-        .btn:hover { 
-            background: var(--black); 
-            color: var(--white); 
-            transform: translateY(-2px); 
-        }
-        
-        .btn-add { 
-            background: var(--black); 
-            color: var(--white); 
-        }
-        
-        /* Search Bar */
-        .search-container {
-            flex: 1;
-            max-width: 400px;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 1px solid var(--border);
-            border-radius: 30px;
-            font-size: 0.95rem;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: var(--black);
-        }
-        
-        /* Regions List - Row by Row with subtle colors */
-        .regions-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        .region-row {
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            width: 100%;
-        }
-        
-        .region-row:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            border-color: var(--black);
-        }
-        
-        /* Subtle color classes for rows */
-        .region-row.color-1 { background-color: var(--row-color-1); }
-        .region-row.color-2 { background-color: var(--row-color-2); }
-        .region-row.color-3 { background-color: var(--row-color-3); }
-        .region-row.color-4 { background-color: var(--row-color-4); }
-        .region-row.color-5 { background-color: var(--row-color-5); }
-        .region-row.color-6 { background-color: var(--row-color-6); }
-        .region-row.color-7 { background-color: var(--row-color-7); }
-        .region-row.color-8 { background-color: var(--row-color-8); }
-        
-        /* Flexbox layout with better spacing */
-        .row-content {
-            display: flex;
-            align-items: center;
-            padding: 16px 20px;
-            gap: 20px;
-            width: 100%;
-            flex-wrap: nowrap;
-        }
-        
-        /* Region info - flexible but with minimum width */
-        .region-info {
-            flex: 2.5;
-            min-width: var(--col-info-min);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .region-name-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .region-name-section h3 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.2rem;
-            color: var(--black);
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .region-code {
-            background: var(--white);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--medium-gray);
-            border: 1px solid var(--border);
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .region-description {
-            color: var(--medium-gray);
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        /* Stats column - fixed width container with flex children */
-        .region-stats {
-            flex: 3.5;
-            min-width: var(--col-stats-min);
-            display: flex;
-            gap: 12px;
-            justify-content: flex-start;
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: var(--white);
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 0; /* Allows flex items to shrink below content size */
-            border: 1px solid var(--border);
-            white-space: nowrap;
-        }
-        
-        .stat-item:hover {
-            background: var(--black);
-            border-color: var(--black);
-        }
-        
-        .stat-item:hover .stat-number,
-        .stat-item:hover .stat-label,
-        .stat-item:hover i {
-            color: var(--white);
-        }
-        
-        .stat-item i {
-            font-size: 0.9rem;
-            color: var(--medium-gray);
-            width: 16px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        
-        .stat-number {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--black);
-            min-width: 18px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--medium-gray);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        /* Status column */
-        .region-status {
-            flex: 1;
-            min-width: var(--col-status-min);
-            display: flex;
-            justify-content: center;
-        }
-        
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            background: var(--white);
-            border: 1px solid transparent;
-            text-align: center;
-            white-space: nowrap;
-            width: 100%;
-            max-width: 80px;
-        }
-        
-        .status-badge.active {
-            background: var(--success);
-            color: var(--white);
-        }
-        
-        .status-badge.inactive {
-            background: var(--light-gray);
-            color: var(--medium-gray);
-            border-color: var(--border);
-        }
-        
-        /* Actions column */
-        .region-actions {
-            flex: 1;
-            min-width: var(--col-actions-min);
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-        
-        .action-btn {
-            padding: 6px 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: var(--white);
-            color: var(--dark-gray);
-            border: 1px solid var(--border);
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        
-        .action-btn:hover {
-            background: var(--black);
-            color: var(--white);
-            border-color: var(--black);
-        }
-        
-        .action-btn.edit-btn:hover {
-            background: var(--info);
-            border-color: var(--info);
-        }
-        
-        .action-btn.delete-btn:hover {
-            background: var(--danger);
-            border-color: var(--danger);
-        }
-        
-        /* Modal Styles */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.7); 
-            z-index: 2000; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        
-        .modal-content { 
-            background: var(--white); 
-            border-radius: 16px; 
-            width: 90%; 
-            max-width: 750px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-            padding: 30px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            border: 1px solid var(--border); 
-        }
-        
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 25px; 
-            padding-bottom: 15px; 
-            border-bottom: 1px solid var(--border); 
-        }
-        
-        .modal-title { 
-            font-family: 'Cormorant Garamond', serif; 
-            color: var(--black); 
-            font-size: 1.8rem; 
-        }
-        
-        .close-modal { 
-            background: none; 
-            border: none; 
-            font-size: 1.8rem; 
-            cursor: pointer; 
-            color: var(--medium-gray); 
-            transition: color 0.2s; 
-        }
-        
-        .close-modal:hover { color: var(--black); }
-        
-        /* Fax Modal Specific */
-        .fax-modal-content {
-            max-width: 600px;
-        }
-        
-        .fax-date {
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
-        
-        .fax-field {
-            margin-bottom: 1.5rem;
-        }
-        
-        .fax-field label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--black);
-        }
-        
-        .fax-field select,
-        .fax-field textarea,
-        .fax-field input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        .fax-field textarea {
-            resize: vertical;
-            min-height: 150px;
-        }
-        
-        /* Items List in Modals */
-        .items-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        
-        .item-row:hover {
-            background: var(--light-gray);
-        }
-        
-        .item-info h4 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-            color: var(--black);
-        }
-        
-        .item-info p {
-            font-size: 0.9rem;
-            color: var(--medium-gray);
-        }
-        
-        .item-info i {
-            width: 16px;
-            margin-right: 5px;
-            color: var(--info);
-        }
-        
-        .item-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .item-badge.active {
-            background: var(--success);
-            color: var(--white);
-        }
-        
-        .item-badge.inactive {
-            background: var(--light-gray);
-            color: var(--medium-gray);
-        }
-        
-        /* Member Details Modal */
-        .member-detail-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .detail-group {
-            margin-bottom: 15px;
-        }
-        
-        .detail-label {
-            font-size: 0.85rem;
-            color: var(--medium-gray);
-            margin-bottom: 5px;
-        }
-        
-        .detail-value {
-            font-weight: 600;
-            color: var(--black);
-            padding: 8px 12px;
-            background: var(--off-white);
-            border-radius: 6px;
-        }
-        
-        .detail-value i {
-            color: var(--info);
-            margin-right: 8px;
-        }
-        
-        .member-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: var(--black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: var(--white);
-            margin: 0 auto 20px;
-        }
-        
-        /* Form Styles */
-        .form-group { margin-bottom: 18px; }
-        
-        .form-row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-        }
-        
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 500; 
-            color: var(--black); 
-        }
-        
-        input, select, textarea { 
-            width: 100%; 
-            padding: 12px 15px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            font-size: 1rem; 
-            transition: border-color 0.3s; 
-            background: var(--white); 
-            color: var(--dark-gray); 
-        }
-        
-        input:focus, select:focus, textarea:focus { 
-            outline: none; 
-            border-color: var(--black); 
-        }
-        
-        .modal-footer { 
-            display: flex; 
-            justify-content: flex-end; 
-            gap: 12px; 
-            margin-top: 20px; 
-            padding-top: 20px; 
-            border-top: 1px solid var(--border); 
-        }
-        
-        .confirm-btn { 
-            padding: 10px 25px; 
-            border: 2px solid var(--black); 
-            border-radius: 6px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            background: var(--white); 
-            color: var(--black); 
-            transition: all 0.2s; 
-        }
-        
-        .confirm-btn:hover { 
-            background: var(--black); 
-            color: var(--white); 
-        }
-        
-        .confirm-yes { 
-            background: var(--danger); 
-            color: var(--white); 
-            border-color: var(--danger); 
-        }
-        
-        .confirm-yes:hover { 
-            background: #990000; 
-        }
-        
-        .confirm-no { 
-            background: var(--white); 
-            color: var(--dark-gray); 
-            border-color: var(--border); 
-        }
-        
-        .confirm-no:hover { 
-            background: var(--light-gray); 
-            color: var(--black); 
-        }
-        
-        /* Loading and Empty States */
-        .loading { 
-            text-align: center; 
-            padding: 60px 20px; 
-            color: var(--medium-gray); 
-        }
-        
-        .loading-spinner { 
-            display: inline-block; 
-            width: 50px; 
-            height: 50px; 
-            border: 4px solid var(--light-gray); 
-            border-radius: 50%; 
-            border-top-color: var(--black); 
-            animation: spin 1s linear infinite; 
-            margin-bottom: 20px; 
-        }
-        
-        @keyframes spin { 
-            to { transform: rotate(360deg); } 
-        }
-        
-        .empty-state { 
-            text-align: center; 
-            padding: 60px 20px; 
-            color: var(--medium-gray); 
-        }
-        
-        .empty-state i { 
-            font-size: 4rem; 
-            margin-bottom: 20px; 
-            opacity: 0.5; 
-        }
-        
-        /* Toast */
-        .toast { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            background: var(--white); 
-            border-left: 4px solid var(--black); 
-            padding: 15px 25px; 
-            border-radius: 8px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2); 
-            z-index: 3000; 
-            display: none; 
-            animation: slideIn 0.3s ease-out; 
-            border: 1px solid var(--border); 
-        }
-        
-        @keyframes slideIn { 
-            from { transform: translateX(400px); opacity: 0; } 
-            to { transform: translateX(0); opacity: 1; } 
-        }
-        
-        .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--danger); }
-        .toast i { margin-right: 10px; }
-        
-        /* Responsive breakpoints - updated for removed location */
-        @media (max-width: 1400px) {
-            .row-content {
-                gap: 15px;
-            }
-            
-            .region-info {
-                flex: 2.2;
-            }
-            
-            .region-stats {
-                flex: 3;
-                gap: 8px;
-            }
-            
-            .stat-item {
-                padding: 6px 8px;
-            }
-            
-            .stat-label {
-                font-size: 0.65rem;
-            }
-        }
-        
-        @media (max-width: 1200px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            
-            .row-content {
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-            
-            .region-info {
-                flex: 1 1 100%;
-                min-width: 100%;
-            }
-            
-            .region-name-section h3 {
-                font-size: 1.3rem;
-                white-space: normal;
-            }
-            
-            .region-description {
-                white-space: normal;
-            }
-            
-            .region-stats {
-                flex: 1 1 100%;
-                min-width: 100%;
-                justify-content: space-between;
-            }
-            
-            .stat-item {
-                flex: 1;
-                padding: 8px 12px;
-            }
-            
-            .stat-label {
-                font-size: 0.75rem;
-            }
-            
-            .region-status {
-                flex: 1;
-            }
-            
-            .region-actions {
-                flex: 1;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .main { margin-left: 0; padding: 100px 20px 60px; }
-            .sidebar { display: none; }
-            .stats-grid { grid-template-columns: 1fr; }
-            
-            .row-content {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            
-            .region-info {
-                width: 100%;
-            }
-            
-            .region-name-section {
-                width: 100%;
-            }
-            
-            .region-name-section h3 {
-                max-width: none;
-                white-space: normal;
-            }
-            
-            .region-description {
-                white-space: normal;
-                max-width: none;
-            }
-            
-            .region-stats {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-            
-            .stat-item {
-                flex: 1 1 calc(33.333% - 8px);
-                min-width: 100px;
-            }
-            
-            .region-status,
-            .region-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-            
-            .status-badge {
-                max-width: none;
-                width: auto;
-                padding: 4px 16px;
-            }
-            
-            .member-detail-row { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 480px) {
-            .region-stats {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .stat-item {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKA Uganda • Regions Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Leaflet for Maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Supabase Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+--black: #000000;
+--dark-gray: #1a1a1a;
+--medium-gray: #4a4a4a;
+--light-gray: #e0e0e0;
+--border: #cccccc;
+--white: #ffffff;
+--off-white: #fafafa;
+--danger: #cc0000;
+--success: #2e7d32;
+--warning: #ed6c02;
+--info: #1976d2;
+--gold: #c5a028;
+/* Subtle color shades for rows */
+--row-color-1: #f8f4e8; /* soft cream */
+--row-color-2: #e8f0f8; /* soft blue */
+--row-color-3: #f0e8f8; /* soft lavender */
+--row-color-4: #e8f8f0; /* soft mint */
+--row-color-5: #f8e8e8; /* soft pink */
+--row-color-6: #f0f8e8; /* soft green */
+--row-color-7: #f8f0e8; /* soft peach */
+--row-color-8: #e8e8f8; /* soft periwinkle */
+/* Flexible column widths with minimums - removed location column */
+--col-info-min: 250px;
+--col-stats-min: 350px;
+--col-status-min: 80px;
+--col-actions-min: 90px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+font-family:'Libre Franklin',sans-serif;
+background:var(--off-white);
+color:var(--dark-gray);
+line-height: 1.6;
+}
+/* Header */
+header {
+position:fixed;
+top:0;
+left:0;
+right:0;
+height:90px;
+background:var(--white);
+border-bottom:1px solid var(--border);
+z-index:1000;
+box-shadow:0 4px 20px rgba(0,0,0,0.04);
+}
+.header-container {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 2rem;
+height: 100%;
+}
+.flag-banner {
+background: linear-gradient(to right, var(--black) 33%, var(--light-gray) 33%, var(--light-gray) 66%, var(--dark-gray) 66%);
+height: 6px;
+width: 100%;
+position: absolute;
+top: 0;
+left: 0;
+}
+.logo-section { display: flex; align-items: center; gap: 15px; }
+.logo {
+font-family:'Cormorant Garamond',serif;
+font-size:2.2rem;
+color:var(--black);
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.logo-icon {
+width: 45px;
+height: 45px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid var(--black);
+}
+.search-section { flex: 1; max-width: 500px; margin: 0 2rem; }
+.search-bar {
+width: 100%;
+padding: 12px 20px;
+border: 1px solid var(--border);
+border-radius: 30px;
+background: var(--white);
+font-size: 0.95rem;
+box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+transition: all 0.3s;
+color: var(--dark-gray);
+}
+.search-bar:focus {
+outline: none;
+border-color: var(--black);
+box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+.user-section { display: flex; align-items: center; gap: 20px; }
+.fax-btn {
+background: var(--black);
+color: var(--white);
+border: 2px solid var(--black);
+padding: 10px 25px;
+border-radius: 30px;
+font-weight: 600;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 10px;
+transition: all 0.3s;
+}
+.fax-btn:hover {
+background: var(--white);
+color: var(--black);
+transform: translateY(-2px);
+box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+.user-profile {
+display: flex;
+align-items: center;
+gap: 12px;
+font-weight: 500;
+cursor: pointer;
+position: relative;
+}
+.user-avatar {
+width: 50px;
+height: 50px;
+border-radius: 50%;
+background: var(--black);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+color: var(--white);
+font-weight: bold;
+}
+.user-info { text-align: right; }
+.user-info strong { color: var(--black); font-size: 1rem; }
+.user-info small { color: var(--medium-gray); font-size: 0.8rem; }
+.user-dropdown {
+position: absolute;
+top: 65px;
+right: 0;
+background: var(--white);
+border-radius: 12px;
+box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+padding: 15px 0;
+min-width: 200px;
+display: none;
+z-index: 1001;
+border: 1px solid var(--border);
+}
+.user-profile:hover .user-dropdown { display: block; }
+.dropdown-item {
+padding: 10px 20px;
+cursor: pointer;
+transition: background 0.2s;
+color: var(--dark-gray);
+text-decoration: none;
+display: block;
+}
+.dropdown-item:hover {
+background: var(--light-gray);
+color: var(--black);
+}
+/* Sidebar */
+.sidebar {
+position: fixed;
+left: 0;
+top: 90px;
+bottom: 0;
+width: 280px;
+background: var(--white);
+border-right: 1px solid var(--border);
+padding-top: 2rem;
+box-shadow: 6px 0 20px rgba(0,0,0,0.03);
+overflow-y: auto;
+}
+.sidebar h3 {
+font-family: 'Cormorant Garamond', serif;
+font-size: 1.8rem;
+color: var(--black);
+text-align: center;
+margin-bottom: 2rem;
+border-bottom: 1px solid var(--border);
+padding-bottom: 1rem;
+}
+.menu-item {
+padding: 1.1rem 2rem;
+display: flex;
+align-items: center;
+gap: 16px;
+color: var(--dark-gray);
+font-weight: 500;
+cursor: pointer;
+transition: 0.3s;
+border-left: 3px solid transparent;
+text-decoration: none;
+}
+.menu-item:hover, .menu-item.active {
+background: var(--light-gray);
+color: var(--black);
+font-weight: 600;
+border-left-color: var(--black);
+}
+.menu-item i { color: var(--medium-gray); width: 20px; text-align: center; }
+.menu-item:hover i, .menu-item.active i { color: var(--black); }
+/* Main Content */
+.main {
+margin-left: 280px;
+padding: 130px 50px 100px;
+min-height: 100vh;
+}
+/* Page Header */
+.page-header {
+text-align: center;
+margin-bottom: 2rem;
+}
+.page-header h1 {
+font-family: 'Cormorant Garamond', serif;
+font-size: 2.5rem;
+color: var(--black);
+margin-bottom: 0.5rem;
+}
+.page-header p {
+color: var(--medium-gray);
+font-size: 1.1rem;
+}
+/* Stats Grid - 4 cards */
+.stats-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 20px;
+margin-bottom: 30px;
+}
+.stat-card {
+background: var(--white);
+border-radius: 16px;
+padding: 25px;
+box-shadow: 0 10px 35px rgba(0,0,0,0.06);
+border: 1px solid var(--border);
+text-align: center;
+transition: transform 0.3s;
+}
+.stat-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+}
+.stat-card i {
+font-size: 3rem;
+color: var(--black);
+margin-bottom: 15px;
+}
+.stat-card .number {
+font-family: 'Cormorant Garamond', serif;
+font-size: 2.5rem;
+font-weight: 700;
+color: var(--black);
+margin: 10px 0;
+}
+.stat-card .label {
+color: var(--medium-gray);
+font-size: 0.95rem;
+}
+/* Action Buttons */
+.action-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 25px;
+flex-wrap: wrap;
+gap: 15px;
+}
+.btn {
+padding: 10px 20px;
+border: 2px solid var(--black);
+border-radius: 6px;
+font-weight: 600;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
+transition: all 0.3s ease;
+font-size: 0.95rem;
+background: var(--white);
+color: var(--black);
+text-decoration: none;
+}
+.btn:hover {
+background: var(--black);
+color: var(--white);
+transform: translateY(-2px);
+}
+.btn-add {
+background: var(--black);
+color: var(--white);
+}
+/* Search Bar */
+.search-container {
+flex: 1;
+max-width: 400px;
+}
+.search-input {
+width: 100%;
+padding: 12px 20px;
+border: 1px solid var(--border);
+border-radius: 30px;
+font-size: 0.95rem;
+}
+.search-input:focus {
+outline: none;
+border-color: var(--black);
+}
+/* Regions List - Row by Row with subtle colors */
+.regions-list {
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-top: 20px;
+}
+.region-row {
+border-radius: 12px;
+border: 1px solid var(--border);
+transition: all 0.3s;
+box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+width: 100%;
+}
+.region-row:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+border-color: var(--black);
+}
+/* Subtle color classes for rows */
+.region-row.color-1 { background-color: var(--row-color-1); }
+.region-row.color-2 { background-color: var(--row-color-2); }
+.region-row.color-3 { background-color: var(--row-color-3); }
+.region-row.color-4 { background-color: var(--row-color-4); }
+.region-row.color-5 { background-color: var(--row-color-5); }
+.region-row.color-6 { background-color: var(--row-color-6); }
+.region-row.color-7 { background-color: var(--row-color-7); }
+.region-row.color-8 { background-color: var(--row-color-8); }
+/* Flexbox layout with better spacing */
+.row-content {
+display: flex;
+align-items: center;
+padding: 16px 20px;
+gap: 20px;
+width: 100%;
+flex-wrap: nowrap;
+}
+/* Region info - flexible but with minimum width */
+.region-info {
+flex: 2.5;
+min-width: var(--col-info-min);
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+.region-name-section {
+display: flex;
+align-items: center;
+gap: 8px;
+flex-wrap: wrap;
+}
+.region-name-section h3 {
+font-family: 'Cormorant Garamond', serif;
+font-size: 1.2rem;
+color: var(--black);
+margin: 0;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.region-code {
+background: var(--white);
+padding: 2px 8px;
+border-radius: 20px;
+font-size: 0.7rem;
+font-weight: 600;
+color: var(--medium-gray);
+border: 1px solid var(--border);
+white-space: nowrap;
+flex-shrink: 0;
+}
+.region-description {
+color: var(--medium-gray);
+font-size: 0.8rem;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+/* Stats column - fixed width container with flex children */
+.region-stats {
+flex: 3.5;
+min-width: var(--col-stats-min);
+display: flex;
+gap: 12px;
+justify-content: flex-start;
+}
+.stat-item {
+display: flex;
+align-items: center;
+gap: 6px;
+padding: 6px 12px;
+background: var(--white);
+border-radius: 30px;
+cursor: pointer;
+transition: all 0.2s;
+flex: 1;
+min-width: 0; /* Allows flex items to shrink below content size */
+border: 1px solid var(--border);
+white-space: nowrap;
+}
+.stat-item:hover {
+background: var(--black);
+border-color: var(--black);
+}
+.stat-item:hover .stat-number,
+.stat-item:hover .stat-label,
+.stat-item:hover i {
+color: var(--white);
+}
+.stat-item i {
+font-size: 0.9rem;
+color: var(--medium-gray);
+width: 16px;
+text-align: center;
+flex-shrink: 0;
+}
+.stat-number {
+font-weight: 700;
+font-size: 0.9rem;
+color: var(--black);
+min-width: 18px;
+text-align: center;
+flex-shrink: 0;
+}
+.stat-label {
+font-size: 0.7rem;
+color: var(--medium-gray);
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+/* Status column */
+.region-status {
+flex: 1;
+min-width: var(--col-status-min);
+display: flex;
+justify-content: center;
+}
+.status-badge {
+padding: 4px 8px;
+border-radius: 20px;
+font-size: 0.65rem;
+font-weight: 600;
+text-transform: uppercase;
+background: var(--white);
+border: 1px solid transparent;
+text-align: center;
+white-space: nowrap;
+width: 100%;
+max-width: 80px;
+}
+.status-badge.active {
+background: var(--success);
+color: var(--white);
+}
+.status-badge.inactive {
+background: var(--light-gray);
+color: var(--medium-gray);
+border-color: var(--border);
+}
+/* Actions column */
+.region-actions {
+flex: 1;
+min-width: var(--col-actions-min);
+display: flex;
+gap: 8px;
+justify-content: flex-end;
+}
+.action-btn {
+padding: 6px 10px;
+border: none;
+border-radius: 6px;
+font-size: 0.8rem;
+cursor: pointer;
+transition: all 0.2s;
+background: var(--white);
+color: var(--dark-gray);
+border: 1px solid var(--border);
+width: 34px;
+height: 34px;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+}
+.action-btn:hover {
+background: var(--black);
+color: var(--white);
+border-color: var(--black);
+}
+.action-btn.edit-btn:hover {
+background: var(--info);
+border-color: var(--info);
+}
+.action-btn.delete-btn:hover {
+background: var(--danger);
+border-color: var(--danger);
+}
+/* Modal Styles */
+.modal {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0,0,0,0.7);
+z-index: 2000;
+justify-content: center;
+align-items: center;
+}
+.modal-content {
+background: var(--white);
+border-radius: 16px;
+width: 90%;
+max-width: 750px;
+box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+padding: 30px;
+max-height: 90vh;
+overflow-y: auto;
+border: 1px solid var(--border);
+}
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 25px;
+padding-bottom: 15px;
+border-bottom: 1px solid var(--border);
+}
+.modal-title {
+font-family: 'Cormorant Garamond', serif;
+color: var(--black);
+font-size: 1.8rem;
+}
+.close-modal {
+background: none;
+border: none;
+font-size: 1.8rem;
+cursor: pointer;
+color: var(--medium-gray);
+transition: color 0.2s;
+}
+.close-modal:hover { color: var(--black); }
+/* Fax Modal Specific */
+.fax-modal-content {
+max-width: 600px;
+}
+.fax-date {
+margin-bottom: 1.5rem;
+font-weight: 500;
+}
+.fax-field {
+margin-bottom: 1.5rem;
+}
+.fax-field label {
+display: block;
+margin-bottom: 8px;
+font-weight: 600;
+color: var(--black);
+}
+.fax-field select,
+.fax-field textarea,
+.fax-field input {
+width: 100%;
+padding: 12px;
+border: 1px solid var(--border);
+border-radius: 8px;
+font-size: 1rem;
+}
+.fax-field textarea {
+resize: vertical;
+min-height: 150px;
+}
+/* Items List in Modals */
+.items-list {
+max-height: 400px;
+overflow-y: auto;
+}
+.item-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 15px;
+border-bottom: 1px solid var(--border);
+transition: background 0.2s;
+cursor: pointer;
+}
+.item-row:hover {
+background: var(--light-gray);
+}
+.item-info h4 {
+font-size: 1.1rem;
+margin-bottom: 5px;
+color: var(--black);
+}
+.item-info p {
+font-size: 0.9rem;
+color: var(--medium-gray);
+}
+.item-info i {
+width: 16px;
+margin-right: 5px;
+color: var(--info);
+}
+.item-badge {
+padding: 4px 10px;
+border-radius: 20px;
+font-size: 0.75rem;
+font-weight: 600;
+}
+.item-badge.active {
+background: var(--success);
+color: var(--white);
+}
+.item-badge.inactive {
+background: var(--light-gray);
+color: var(--medium-gray);
+}
+/* Member Details Modal */
+.member-detail-row {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 15px;
+margin-bottom: 15px;
+}
+.detail-group {
+margin-bottom: 15px;
+}
+.detail-label {
+font-size: 0.85rem;
+color: var(--medium-gray);
+margin-bottom: 5px;
+}
+.detail-value {
+font-weight: 600;
+color: var(--black);
+padding: 8px 12px;
+background: var(--off-white);
+border-radius: 6px;
+}
+.detail-value i {
+color: var(--info);
+margin-right: 8px;
+}
+.member-avatar {
+width: 100px;
+height: 100px;
+border-radius: 50%;
+background: var(--black);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 3rem;
+color: var(--white);
+margin: 0 auto 20px;
+}
+/* Form Styles */
+.form-group { margin-bottom: 18px; }
+.form-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 15px;
+}
+label {
+display: block;
+margin-bottom: 8px;
+font-weight: 500;
+color: var(--black);
+}
+input, select, textarea {
+width: 100%;
+padding: 12px 15px;
+border: 1px solid var(--border);
+border-radius: 8px;
+font-size: 1rem;
+transition: border-color 0.3s;
+background: var(--white);
+color: var(--dark-gray);
+}
+input:focus, select:focus, textarea:focus {
+outline: none;
+border-color: var(--black);
+}
+.modal-footer {
+display: flex;
+justify-content: flex-end;
+gap: 12px;
+margin-top: 20px;
+padding-top: 20px;
+border-top: 1px solid var(--border);
+}
+.confirm-btn {
+padding: 10px 25px;
+border: 2px solid var(--black);
+border-radius: 6px;
+font-weight: 600;
+cursor: pointer;
+background: var(--white);
+color: var(--black);
+transition: all 0.2s;
+}
+.confirm-btn:hover {
+background: var(--black);
+color: var(--white);
+}
+.confirm-yes {
+background: var(--danger);
+color: var(--white);
+border-color: var(--danger);
+}
+.confirm-yes:hover {
+background: #990000;
+}
+.confirm-no {
+background: var(--white);
+color: var(--dark-gray);
+border-color: var(--border);
+}
+.confirm-no:hover {
+background: var(--light-gray);
+color: var(--black);
+}
+/* Loading and Empty States */
+.loading {
+text-align: center;
+padding: 60px 20px;
+color: var(--medium-gray);
+}
+.loading-spinner {
+display: inline-block;
+width: 50px;
+height: 50px;
+border: 4px solid var(--light-gray);
+border-radius: 50%;
+border-top-color: var(--black);
+animation: spin 1s linear infinite;
+margin-bottom: 20px;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+.empty-state {
+text-align: center;
+padding: 60px 20px;
+color: var(--medium-gray);
+}
+.empty-state i {
+font-size: 4rem;
+margin-bottom: 20px;
+opacity: 0.5;
+}
+/* Toast */
+.toast {
+position: fixed;
+bottom: 20px;
+right: 20px;
+background: var(--white);
+border-left: 4px solid var(--black);
+padding: 15px 25px;
+border-radius: 8px;
+box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+z-index: 3000;
+display: none;
+animation: slideIn 0.3s ease-out;
+border: 1px solid var(--border);
+}
+@keyframes slideIn {
+from { transform: translateX(400px); opacity: 0; }
+to { transform: translateX(0); opacity: 1; }
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+.toast i { margin-right: 10px; }
+/* Subregion/Mosque Add Buttons in Modals */
+.modal-action-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+padding-bottom: 15px;
+border-bottom: 1px solid var(--border);
+}
+.btn-small {
+padding: 8px 16px;
+font-size: 0.85rem;
+}
+/* Responsive breakpoints - updated for removed location */
+@media (max-width: 1400px) {
+.row-content {
+gap: 15px;
+}
+.region-info {
+flex: 2.2;
+}
+.region-stats {
+flex: 3;
+gap: 8px;
+}
+.stat-item {
+padding: 6px 8px;
+}
+.stat-label {
+font-size: 0.65rem;
+}
+}
+@media (max-width: 1200px) {
+.stats-grid { grid-template-columns: repeat(2, 1fr); }
+.row-content {
+flex-wrap: wrap;
+gap: 12px;
+}
+.region-info {
+flex: 1 1 100%;
+min-width: 100%;
+}
+.region-name-section h3 {
+font-size: 1.3rem;
+white-space: normal;
+}
+.region-description {
+white-space: normal;
+}
+.region-stats {
+flex: 1 1 100%;
+min-width: 100%;
+justify-content: space-between;
+}
+.stat-item {
+flex: 1;
+padding: 8px 12px;
+}
+.stat-label {
+font-size: 0.75rem;
+}
+.region-status {
+flex: 1;
+}
+.region-actions {
+flex: 1;
+}
+}
+@media (max-width: 768px) {
+.main { margin-left: 0; padding: 100px 20px 60px; }
+.sidebar { display: none; }
+.stats-grid { grid-template-columns: 1fr; }
+.row-content {
+flex-direction: column;
+align-items: flex-start;
+gap: 12px;
+}
+.region-info {
+width: 100%;
+}
+.region-name-section {
+width: 100%;
+}
+.region-name-section h3 {
+max-width: none;
+white-space: normal;
+}
+.region-description {
+white-space: normal;
+max-width: none;
+}
+.region-stats {
+width: 100%;
+flex-wrap: wrap;
+}
+.stat-item {
+flex: 1 1 calc(33.333% - 8px);
+min-width: 100px;
+}
+.region-status,
+.region-actions {
+width: 100%;
+justify-content: flex-start;
+}
+.status-badge {
+max-width: none;
+width: auto;
+padding: 4px 16px;
+}
+.member-detail-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+.region-stats {
+flex-direction: column;
+gap: 8px;
+}
+.stat-item {
+width: 100%;
+}
+}
+</style>
 </head>
 <body>
-    <!-- HEADER -->
-    <header>
-        <div class="flag-banner"></div>
-        <div class="header-container">
-            <div class="logo-section">
-                <div class="logo">
-                    <img src="https://avatars.githubusercontent.com/u/214355993?v=4" alt="MKA Uganda Logo" class="logo-icon">
-                    <div>
-                        <strong style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--black);">MKA Uganda</strong>
-                        <small style="display:block; color:var(--medium-gray); letter-spacing:1px; margin-top:2px;">MAJLIS KHUDDAMUL AHMADIYYA</small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="search-section">
-                <input type="text" class="search-bar" id="globalSearch" placeholder="Search regions..." onkeyup="performSearch(event)">
-            </div>
-            
-            <div class="user-section">
-                <button class="fax-btn" id="faxTab"><i class="fas fa-fax"></i> Send Fax to Huzoor (aba)</button>
-                
-                <div class="user-profile">
-                    <div class="user-avatar"><i class="fas fa-user"></i></div>
-                    <div class="user-info">
-                        <strong>Sadr Sahib</strong>
-                        <small>National President</small>
-                    </div>
-                    <div class="user-dropdown">
-                        <a href="profile.html" class="dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
-                        <a href="settings.html" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
-                        <div class="dropdown-divider"></div>
-                        <div class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <h3>MKA Uganda</h3>
-        <a href="index.html" class="menu-item" id="nav-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        <a href="members.html" class="menu-item" id="nav-members"><i class="fas fa-users"></i> Khuddam</a>
-        <a href="departments.html" class="menu-item" id="nav-departments"><i class="fas fa-building"></i> Departments</a>
-        <a href="regions.html" class="menu-item active" id="nav-regions"><i class="fas fa-sitemap"></i> Regions</a>
-        <a href="reports.html" class="menu-item" id="nav-reports"><i class="fas fa-chart-bar"></i> Reports</a>
-        <a href="system.html" class="menu-item" id="nav-system"><i class="fas fa-cogs"></i> System</a>
-        <a href="settings.html" class="menu-item" id="nav-settings"><i class="fas fa-cog"></i> Settings</a>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <div class="main">
-        <div class="page-header">
-            <h1>🗺️ MAJLIS KHUDDAMUL AHMADIYYA UGANDA</h1>
-            <p>Manage geographical Regions and their associated Qiadats, Mosques, and Members</p>
-        </div>
-
-        <!-- Stats Cards - 4 cards (removed Active Regions) -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-map-marked-alt"></i>
-                <div class="number" id="totalRegionsStat">0</div>
-                <div class="label">Total Regions</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-layer-group"></i>
-                <div class="number" id="totalSubregionsStat">0</div>
-                <div class="label">Qiadats</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-mosque"></i>
-                <div class="number" id="totalMosquesStat">0</div>
-                <div class="label">Mosques</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-users"></i>
-                <div class="number" id="totalMembersStat">0</div>
-                <div class="label">Members</div>
-            </div>
-        </div>
-
-        <!-- Action Bar -->
-        <div class="action-bar">
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Search regions by name, code, or description..." onkeyup="filterRegions()">
-            </div>
-            <button class="btn btn-add" onclick="openAddModal()">
-                <i class="fas fa-plus"></i> Add New Region
-            </button>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingState" class="loading">
-            <div class="loading-spinner"></div>
-            <p>Loading regions data...</p>
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <i class="fas fa-map"></i>
-            <h3>No regions found</h3>
-            <p>Get started by adding your first region</p>
-            <button class="btn btn-add" onclick="openAddModal()" style="margin-top: 15px;">
-                <i class="fas fa-plus"></i> Add Region
-            </button>
-        </div>
-
-        <!-- Regions List - Row by Row with subtle colors -->
-        <div id="regionsList" class="regions-list"></div>
-    </div>
-
-    <!-- FAX MODAL (Original) -->
-    <div id="faxModal" class="modal">
-        <div class="modal-content fax-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Send Fax to Huzoor (aba)</h3>
-                <button class="close-modal" onclick="closeFaxModal()">&times;</button>
-            </div>
-            
-            <form id="faxForm" onsubmit="handleFaxSubmit(event)">
-                <div class="fax-field">
-                    <p class="fax-date"><strong>Date:</strong> <span id="faxDate"></span></p>
-                </div>
-                
-                <div class="fax-field">
-                    <label for="faxType">Fax Type</label>
-                    <select id="faxType">
-                        <option>Monthly Report – Uganda Jamā'at</option>
-                        <option>Request for Dua</option>
-                        <option>Jalsa Salana Report</option>
-                        <option>Bai'at Report</option>
-                        <option>Region Update Report</option>
-                        <option>Other</option>
-                    </select>
-                </div>
-                
-                <div class="fax-field">
-                    <label for="faxMessage">Message</label>
-                    <textarea id="faxMessage" placeholder="Enter your message to Huzoor (aba)..."></textarea>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="confirm-btn confirm-no" onclick="closeFaxModal()">Cancel</button>
-                    <button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
-                        <i class="fas fa-paper-plane"></i> Send to Huzoor (aba)
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ADD/EDIT REGION MODAL -->
-    <div id="crudModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Add New Region</h3>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            
-            <form id="crudForm" onsubmit="handleFormSubmit(event)">
-                <input type="hidden" id="regionId">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="regionName">Region Name <span style="color: var(--danger);">*</span></label>
-                        <input type="text" id="regionName" required placeholder="e.g., Central Region">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="regionCode">Region Code</label>
-                        <input type="text" id="regionCode" placeholder="e.g., CENT" maxlength="10">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="latitude">Latitude <span style="color: var(--danger);">*</span></label>
-                        <input type="number" id="latitude" step="0.0001" min="-90" max="90" required placeholder="e.g., 0.3476">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="longitude">Longitude <span style="color: var(--danger);">*</span></label>
-                        <input type="number" id="longitude" step="0.0001" min="-180" max="180" required placeholder="e.g., 32.5825">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="regionDescription">Description</label>
-                    <textarea id="regionDescription" rows="3" placeholder="Brief description of the region..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="regionActive">Status</label>
-                    <select id="regionActive">
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
-                    </select>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="confirm-btn confirm-no" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
-                        <i class="fas fa-save"></i> Save Region
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SUBREGIONS MODAL -->
-    <div id="subregionsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="subregionsModalTitle">Qiadats</h3>
-                <button class="close-modal" onclick="closeSubregionsModal()">&times;</button>
-            </div>
-            <div id="subregionsList" class="items-list"></div>
-        </div>
-    </div>
-
-    <!-- MOSQUES MODAL -->
-    <div id="mosquesModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="mosquesModalTitle">Mosques</h3>
-                <button class="close-modal" onclick="closeMosquesModal()">&times;</button>
-            </div>
-            <div id="mosquesList" class="items-list"></div>
-        </div>
-    </div>
-
-    <!-- MEMBERS MODAL -->
-    <div id="membersModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="membersModalTitle">Members</h3>
-                <button class="close-modal" onclick="closeMembersModal()">&times;</button>
-            </div>
-            <div id="membersList" class="items-list"></div>
-        </div>
-    </div>
-
-    <!-- MEMBER DETAILS MODAL -->
-    <div id="memberDetailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Member Details</h3>
-                <button class="close-modal" onclick="closeMemberDetailsModal()">&times;</button>
-            </div>
-            <div id="memberDetails"></div>
-        </div>
-    </div>
-
-    <!-- DELETE CONFIRMATION MODAL -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Confirm Deletion</h3>
-                <button class="close-modal" onclick="closeDeleteModal()">&times;</button>
-            </div>
-            
-            <div style="text-align: center; margin: 20px 0;">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
-                <p>Are you sure you want to remove <strong id="deleteRegionName"></strong>?</p>
-                <p style="color: var(--medium-gray); font-size: 0.9rem; margin-top: 15px;">
-                    This action cannot be undone. All associated Qiadats, Mosques, and Member assignments will be affected.
-                </p>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="confirm-btn confirm-no" onclick="closeDeleteModal()">Cancel</button>
-                <button class="confirm-btn confirm-yes" onclick="confirmDelete()">
-                    <i class="fas fa-trash"></i> Delete Region
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastMessage">Operation successful!</span>
-    </div>
-
-    <script>
-        // ==================== SUPABASE CONFIGURATION ====================
-        const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co".trim();
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo".trim();
-
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // ==================== GLOBAL STATE ====================
-        let regions = [];
-        let subregions = [];
-        let mosques = [];
-        let members = [];
-        let filteredRegions = [];
-        let currentDeleteId = null;
-
-        // ==================== INITIALIZATION ====================
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Set fax date
-            document.getElementById('faxDate').textContent = new Date().toLocaleDateString('en-GB', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-            
-            await loadAllData();
-            setupRealtimeSubscription();
-        });
-
-        async function loadAllData() {
-            showLoading(true);
-            try {
-                // Load all data in parallel
-                const [regionsData, subregionsData, mosquesData, membersData] = await Promise.all([
-                    sb.from('regions').select('*').order('name'),
-                    sb.from('subregions').select('*'),
-                    sb.from('mosques').select('*'),
-                    sb.from('members').select('*')
-                ]);
-                
-                if (regionsData.error) throw regionsData.error;
-                if (subregionsData.error) throw subregionsData.error;
-                if (mosquesData.error) throw mosquesData.error;
-                if (membersData.error) throw membersData.error;
-                
-                regions = regionsData.data || [];
-                subregions = subregionsData.data || [];
-                mosques = mosquesData.data || [];
-                members = membersData.data || [];
-                
-                filteredRegions = [...regions];
-                updateStats();
-                renderRegionsList();
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showToast('Failed to load data', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function updateStats() {
-            document.getElementById('totalRegionsStat').textContent = regions.length;
-            document.getElementById('totalSubregionsStat').textContent = subregions.length;
-            document.getElementById('totalMosquesStat').textContent = mosques.length;
-            document.getElementById('totalMembersStat').textContent = members.length;
-        }
-
-        function filterRegions() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            filteredRegions = regions.filter(region => 
-                region.name?.toLowerCase().includes(searchTerm) ||
-                region.code?.toLowerCase().includes(searchTerm) ||
-                region.description?.toLowerCase().includes(searchTerm)
-            );
-            
-            renderRegionsList();
-        }
-
-        function renderRegionsList() {
-            const list = document.getElementById('regionsList');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (filteredRegions.length === 0) {
-                list.innerHTML = '';
-                emptyState.style.display = regions.length === 0 ? 'block' : 'none';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            // Array of color classes to cycle through
-            const colorClasses = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7', 'color-8'];
-            
-            list.innerHTML = filteredRegions.map((region, index) => {
-                const regionSubregions = subregions.filter(s => s.region_id === region.id);
-                const regionMosques = mosques.filter(m => m.region_id === region.id);
-                const regionMembers = members.filter(m => m.region_id === region.id);
-                
-                // Assign a color class based on index (cycles through the 8 colors)
-                const colorClass = colorClasses[index % colorClasses.length];
-                
-                return `
-                    <div class="region-row ${colorClass}">
-                        <div class="row-content">
-                            <div class="region-info">
-                                <div class="region-name-section">
-                                    <h3 title="${escapeHtml(region.name)}">${escapeHtml(region.name)}</h3>
-                                    ${region.code ? `<span class="region-code">${escapeHtml(region.code)}</span>` : ''}
-                                </div>
-                                ${region.description ? `
-                                    <div class="region-description" title="${escapeHtml(region.description)}">
-                                        ${escapeHtml(region.description.substring(0, 100))}${region.description.length > 100 ? '...' : ''}
-                                    </div>
-                                ` : ''}
-                            </div>
-                            
-                            <div class="region-stats">
-                                <div class="stat-item" onclick="showSubregions('${region.id}', '${escapeHtml(region.name)}')" title="View subregions">
-                                    <i class="fas fa-layer-group"></i>
-                                    <span class="stat-number">${regionSubregions.length}</span>
-                                    <span class="stat-label">Subregions</span>
-                                </div>
-                                
-                                <div class="stat-item" onclick="showMosques('${region.id}', '${escapeHtml(region.name)}')" title="View mosques">
-                                    <i class="fas fa-mosque"></i>
-                                    <span class="stat-number">${regionMosques.length}</span>
-                                    <span class="stat-label">Mosques</span>
-                                </div>
-                                
-                                <div class="stat-item" onclick="showMembers('${region.id}', '${escapeHtml(region.name)}')" title="View members">
-                                    <i class="fas fa-users"></i>
-                                    <span class="stat-number">${regionMembers.length}</span>
-                                    <span class="stat-label">Members</span>
-                                </div>
-                            </div>
-                            
-                            <div class="region-status">
-                                <span class="status-badge ${region.active ? 'active' : 'inactive'}">
-                                    ${region.active ? 'Active' : 'Inactive'}
-                                </span>
-                            </div>
-                            
-                            <div class="region-actions">
-                                <button class="action-btn edit-btn" onclick="openEditModal('${region.id}')" title="Edit region">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete-btn" onclick="openDeleteConfirm('${region.id}', '${escapeHtml(region.name)}')" title="Delete region">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ==================== MODAL FUNCTIONS ====================
-        function showSubregions(regionId, regionName) {
-            const regionSubregions = subregions.filter(s => s.region_id === regionId);
-            
-            document.getElementById('subregionsModalTitle').textContent = `Subregions - ${regionName}`;
-            
-            if (regionSubregions.length === 0) {
-                document.getElementById('subregionsList').innerHTML = `
-                    <div class="empty-state" style="padding: 40px;">
-                        <i class="fas fa-layer-group"></i>
-                        <p>No subregions found in this region</p>
-                    </div>
-                `;
-            } else {
-                document.getElementById('subregionsList').innerHTML = regionSubregions.map(sub => `
-                    <div class="item-row" onclick="showSubregionDetails('${sub.id}')">
-                        <div class="item-info">
-                            <h4>${escapeHtml(sub.name)}</h4>
-                            <p>
-                                <i class="fas fa-map-marker-alt"></i> 
-                                ${sub.latitude?.toFixed(3)}°, ${sub.longitude?.toFixed(3)}°
-                            </p>
-                        </div>
-                        <span class="item-badge ${sub.active ? 'active' : 'inactive'}">
-                            ${sub.active ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
-                `).join('');
-            }
-            
-            document.getElementById('subregionsModal').style.display = 'flex';
-        }
-
-        function showMosques(regionId, regionName) {
-            const regionMosques = mosques.filter(m => m.region_id === regionId);
-            
-            document.getElementById('mosquesModalTitle').textContent = `Mosques - ${regionName}`;
-            
-            if (regionMosques.length === 0) {
-                document.getElementById('mosquesList').innerHTML = `
-                    <div class="empty-state" style="padding: 40px;">
-                        <i class="fas fa-mosque"></i>
-                        <p>No mosques found in this region</p>
-                    </div>
-                `;
-            } else {
-                document.getElementById('mosquesList').innerHTML = regionMosques.map(mosque => `
-                    <div class="item-row" onclick="showMosqueDetails('${mosque.id}')">
-                        <div class="item-info">
-                            <h4>${escapeHtml(mosque.name)}</h4>
-                            <p>
-                                <i class="fas fa-user"></i> Imam: ${escapeHtml(mosque.imam_name || 'Not assigned')}<br>
-                                <i class="fas fa-phone"></i> ${escapeHtml(mosque.contact_number || 'No contact')}
-                            </p>
-                        </div>
-                        <span class="item-badge ${mosque.active ? 'active' : 'inactive'}">
-                            ${mosque.active ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
-                `).join('');
-            }
-            
-            document.getElementById('mosquesModal').style.display = 'flex';
-        }
-
-        function showMembers(regionId, regionName) {
-            const regionMembers = members.filter(m => m.region_id === regionId);
-            
-            document.getElementById('membersModalTitle').textContent = `Members - ${regionName}`;
-            
-            if (regionMembers.length === 0) {
-                document.getElementById('membersList').innerHTML = `
-                    <div class="empty-state" style="padding: 40px;">
-                        <i class="fas fa-users"></i>
-                        <p>No members found in this region</p>
-                    </div>
-                `;
-            } else {
-                document.getElementById('membersList').innerHTML = regionMembers.map(member => `
-                    <div class="item-row" onclick="showMemberDetails('${member.id}')">
-                        <div class="item-info">
-                            <h4>${escapeHtml(member.full_name)}</h4>
-                            <p>
-                                <i class="fas fa-id-card"></i> ${escapeHtml(member.member_id || 'No ID')}<br>
-                                <i class="fas fa-briefcase"></i> ${escapeHtml(member.position || 'Member')}
-                            </p>
-                        </div>
-                        <span class="item-badge ${member.status === 'Active' ? 'active' : 'inactive'}">
-                            ${escapeHtml(member.status || 'Active')}
-                        </span>
-                    </div>
-                `).join('');
-            }
-            
-            document.getElementById('membersModal').style.display = 'flex';
-        }
-
-        async function showMemberDetails(memberId) {
-            // Close members modal
-            closeMembersModal();
-            
-            // Fetch full member details
-            const member = members.find(m => m.id === memberId);
-            if (!member) return;
-            
-            const region = regions.find(r => r.id === member.region_id);
-            const subregion = subregions.find(s => s.id === member.subregion_id);
-            
-            const detailsHtml = `
-                <div style="margin-bottom: 20px;">
-                    <div class="member-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    
-                    <h2 style="text-align: center; margin-bottom: 20px; font-family: 'Cormorant Garamond', serif;">${escapeHtml(member.full_name)}</h2>
-                    
-                    <div class="member-detail-row">
-                        <div class="detail-group">
-                            <div class="detail-label">Member ID</div>
-                            <div class="detail-value"><i class="fas fa-id-card"></i> ${escapeHtml(member.member_id || 'Not assigned')}</div>
-                        </div>
-                        
-                        <div class="detail-group">
-                            <div class="detail-label">Status</div>
-                            <div class="detail-value">
-                                <span class="item-badge ${member.status === 'Active' ? 'active' : 'inactive'}">
-                                    ${escapeHtml(member.status || 'Active')}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="member-detail-row">
-                        <div class="detail-group">
-                            <div class="detail-label">Position</div>
-                            <div class="detail-value"><i class="fas fa-briefcase"></i> ${escapeHtml(member.position || 'Member')}</div>
-                        </div>
-                        
-                        <div class="detail-group">
-                            <div class="detail-label">Department</div>
-                            <div class="detail-value"><i class="fas fa-building"></i> ${escapeHtml(member.department || 'Not assigned')}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="member-detail-row">
-                        <div class="detail-group">
-                            <div class="detail-label">Region</div>
-                            <div class="detail-value"><i class="fas fa-map-marked-alt"></i> ${escapeHtml(region?.name || 'Not assigned')}</div>
-                        </div>
-                        
-                        <div class="detail-group">
-                            <div class="detail-label">Subregion</div>
-                            <div class="detail-value"><i class="fas fa-layer-group"></i> ${escapeHtml(subregion?.name || 'Not assigned')}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="member-detail-row">
-                        <div class="detail-group">
-                            <div class="detail-label">Phone</div>
-                            <div class="detail-value"><i class="fas fa-phone"></i> ${escapeHtml(member.phone || 'Not provided')}</div>
-                        </div>
-                        
-                        <div class="detail-group">
-                            <div class="detail-label">Email</div>
-                            <div class="detail-value"><i class="fas fa-envelope"></i> ${escapeHtml(member.email || 'Not provided')}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="member-detail-row">
-                        <div class="detail-group">
-                            <div class="detail-label">Date Joined</div>
-                            <div class="detail-value"><i class="fas fa-calendar"></i> ${member.date_joined ? new Date(member.date_joined).toLocaleDateString() : 'Not recorded'}</div>
-                        </div>
-                        
-                        <div class="detail-group">
-                            <div class="detail-label">Age Group</div>
-                            <div class="detail-value"><i class="fas fa-users"></i> ${escapeHtml(member.age_group || 'Not calculated')}</div>
-                        </div>
-                    </div>
-                    
-                    ${member.address ? `
-                        <div class="detail-group">
-                            <div class="detail-label">Address</div>
-                            <div class="detail-value"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(member.address)}</div>
-                        </div>
-                    ` : ''}
-                    
-                    ${member.flags && member.flags.length > 0 ? `
-                        <div class="detail-group">
-                            <div class="detail-label">Flags</div>
-                            <div class="detail-value">
-                                ${member.flags.map(flag => `<span class="item-badge" style="margin-right: 5px; background: var(--info); color: white;">${escapeHtml(flag)}</span>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            
-            document.getElementById('memberDetails').innerHTML = detailsHtml;
-            document.getElementById('memberDetailsModal').style.display = 'flex';
-        }
-
-        function showSubregionDetails(subregionId) {
-            closeSubregionsModal();
-            showToast('Subregion details view coming soon', 'info');
-        }
-
-        function showMosqueDetails(mosqueId) {
-            closeMosquesModal();
-            showToast('Mosque details view coming soon', 'info');
-        }
-
-        function closeSubregionsModal() {
-            document.getElementById('subregionsModal').style.display = 'none';
-        }
-
-        function closeMosquesModal() {
-            document.getElementById('mosquesModal').style.display = 'none';
-        }
-
-        function closeMembersModal() {
-            document.getElementById('membersModal').style.display = 'none';
-        }
-
-        function closeMemberDetailsModal() {
-            document.getElementById('memberDetailsModal').style.display = 'none';
-        }
-
-        // ==================== CRUD OPERATIONS ====================
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'Add New Region';
-            document.getElementById('crudForm').reset();
-            document.getElementById('regionId').value = '';
-            document.getElementById('latitude').value = 0.3476;
-            document.getElementById('longitude').value = 32.5825;
-            document.getElementById('regionActive').value = 'true';
-            document.getElementById('crudModal').style.display = 'flex';
-        }
-
-        function openEditModal(id) {
-            const region = regions.find(r => r.id === id);
-            if (!region) return;
-            
-            document.getElementById('modalTitle').textContent = 'Edit Region';
-            document.getElementById('regionId').value = region.id;
-            document.getElementById('regionName').value = region.name || '';
-            document.getElementById('regionCode').value = region.code || '';
-            document.getElementById('latitude').value = region.latitude || 0.3476;
-            document.getElementById('longitude').value = region.longitude || 32.5825;
-            document.getElementById('regionDescription').value = region.description || '';
-            document.getElementById('regionActive').value = region.active ? 'true' : 'false';
-            document.getElementById('crudModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('crudModal').style.display = 'none';
-        }
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            const id = document.getElementById('regionId').value;
-            const regionData = {
-                name: document.getElementById('regionName').value.trim(),
-                code: document.getElementById('regionCode').value.trim().toUpperCase() || null,
-                latitude: parseFloat(document.getElementById('latitude').value),
-                longitude: parseFloat(document.getElementById('longitude').value),
-                description: document.getElementById('regionDescription').value.trim() || null,
-                active: document.getElementById('regionActive').value === 'true'
-            };
-            
-            if (!regionData.name) {
-                showToast('Region name is required', 'error');
-                return;
-            }
-            
-            try {
-                if (id) {
-                    const { error } = await sb.from('regions').update(regionData).eq('id', id);
-                    if (error) throw error;
-                    showToast('Region updated successfully', 'success');
-                } else {
-                    const { error } = await sb.from('regions').insert([regionData]);
-                    if (error) throw error;
-                    showToast('Region added successfully', 'success');
-                }
-                
-                closeModal();
-                await loadAllData();
-                
-            } catch (error) {
-                console.error('Error saving region:', error);
-                showToast('Failed to save region', 'error');
-            }
-        }
-
-        function openDeleteConfirm(id, name) {
-            currentDeleteId = id;
-            document.getElementById('deleteRegionName').textContent = `"${name}"`;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            currentDeleteId = null;
-        }
-
-        async function confirmDelete() {
-            if (!currentDeleteId) return;
-            
-            try {
-                const { error } = await sb.from('regions').delete().eq('id', currentDeleteId);
-                if (error) throw error;
-                
-                showToast('Region deleted successfully', 'success');
-                closeDeleteModal();
-                await loadAllData();
-                
-            } catch (error) {
-                console.error('Error deleting region:', error);
-                showToast('Failed to delete region', 'error');
-            }
-        }
-
-        // ==================== FAX MODAL FUNCTIONS ====================
-        function showFaxModal() {
-            document.getElementById('faxModal').style.display = 'flex';
-        }
-
-        function closeFaxModal() {
-            document.getElementById('faxModal').style.display = 'none';
-            document.getElementById('faxForm').reset();
-        }
-
-        function handleFaxSubmit(e) {
-            e.preventDefault();
-            showToast('Fax sent successfully to Huzoor (aba)', 'success');
-            closeFaxModal();
-        }
-
-        // ==================== UTILITY FUNCTIONS ====================
-        function showLoading(show) {
-            document.getElementById('loadingState').style.display = show ? 'block' : 'none';
-            document.getElementById('regionsList').style.display = show ? 'none' : 'block';
-        }
-
-        function performSearch(event) {
-            if (event.key === 'Enter') {
-                document.getElementById('searchInput').value = event.target.value;
-                filterRegions();
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.className = `toast ${type}`;
-            toast.style.display = 'block';
-            
-            const icon = toast.querySelector('i');
-            icon.className = type === 'success' ? 'fas fa-check-circle' : 
-                           type === 'error' ? 'fas fa-exclamation-circle' : 
-                           'fas fa-info-circle';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function logout() {
-            showToast('Logged out successfully');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
-        }
-
-        function setupRealtimeSubscription() {
-            sb.channel('regions-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'regions' }, () => loadAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'subregions' }, () => loadAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'mosques' }, () => loadAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => loadAllData())
-                .subscribe();
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        };
-
-        // Fax button click handler
-        document.getElementById('faxTab').onclick = showFaxModal;
-    </script>
+<!-- HEADER -->
+<header>
+<div class="flag-banner"></div>
+<div class="header-container">
+<div class="logo-section">
+<div class="logo">
+<img src="https://avatars.githubusercontent.com/u/214355993?v=4" alt="MKA Uganda Logo" class="logo-icon">
+<div>
+<strong style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--black);">MKA Uganda</strong>
+<small style="display:block; color:var(--medium-gray); letter-spacing:1px; margin-top:2px;">MAJLIS KHUDDAMUL AHMADIYYA</small>
+</div>
+</div>
+</div>
+<div class="search-section">
+<input type="text" class="search-bar" id="globalSearch" placeholder="Search regions..." onkeyup="performSearch(event)">
+</div>
+<div class="user-section">
+<button class="fax-btn" id="faxTab"><i class="fas fa-fax"></i> Send Fax to Huzoor (aba)</button>
+<div class="user-profile">
+<div class="user-avatar"><i class="fas fa-user"></i></div>
+<div class="user-info">
+<strong>Sadr Sahib</strong>
+<small>National President</small>
+</div>
+<div class="user-dropdown">
+<a href="profile.html" class="dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+<a href="settings.html" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+<div class="dropdown-divider"></div>
+<div class="dropdown-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<h3>MKA Uganda</h3>
+<a href="index.html" class="menu-item" id="nav-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+<a href="members.html" class="menu-item" id="nav-members"><i class="fas fa-users"></i> Khuddam</a>
+<a href="departments.html" class="menu-item" id="nav-departments"><i class="fas fa-building"></i> Departments</a>
+<a href="regions.html" class="menu-item active" id="nav-regions"><i class="fas fa-sitemap"></i> Regions</a>
+<a href="reports.html" class="menu-item" id="nav-reports"><i class="fas fa-chart-bar"></i> Reports</a>
+<a href="system.html" class="menu-item" id="nav-system"><i class="fas fa-cogs"></i> System</a>
+<a href="settings.html" class="menu-item" id="nav-settings"><i class="fas fa-cog"></i> Settings</a>
+</aside>
+<!-- MAIN CONTENT -->
+<div class="main">
+<div class="page-header">
+<h1>🗺️ MAJLIS KHUDDAMUL AHMADIYYA UGANDA</h1>
+<p>Manage geographical Regions and their associated Qiadats, Mosques, and Members</p>
+</div>
+<!-- Stats Cards - 4 cards (removed Active Regions) -->
+<div class="stats-grid">
+<div class="stat-card">
+<i class="fas fa-map-marked-alt"></i>
+<div class="number" id="totalRegionsStat">0</div>
+<div class="label">Total Regions</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-layer-group"></i>
+<div class="number" id="totalSubregionsStat">0</div>
+<div class="label">Qiadats</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-mosque"></i>
+<div class="number" id="totalMosquesStat">0</div>
+<div class="label">Mosques</div>
+</div>
+<div class="stat-card">
+<i class="fas fa-users"></i>
+<div class="number" id="totalMembersStat">0</div>
+<div class="label">Members</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="action-bar">
+<div class="search-container">
+<input type="text" class="search-input" id="searchInput" placeholder="Search regions by name, code, or description..." onkeyup="filterRegions()">
+</div>
+<button class="btn btn-add" onclick="openAddModal()">
+<i class="fas fa-plus"></i> Add New Region
+</button>
+</div>
+<!-- Loading State -->
+<div id="loadingState" class="loading">
+<div class="loading-spinner"></div>
+<p>Loading regions data...</p>
+</div>
+<!-- Empty State -->
+<div id="emptyState" class="empty-state" style="display: none;">
+<i class="fas fa-map"></i>
+<h3>No regions found</h3>
+<p>Get started by adding your first region</p>
+<button class="btn btn-add" onclick="openAddModal()" style="margin-top: 15px;">
+<i class="fas fa-plus"></i> Add Region
+</button>
+</div>
+<!-- Regions List - Row by Row with subtle colors -->
+<div id="regionsList" class="regions-list"></div>
+</div>
+<!-- FAX MODAL (Original) -->
+<div id="faxModal" class="modal">
+<div class="modal-content fax-modal-content">
+<div class="modal-header">
+<h3 class="modal-title">Send Fax to Huzoor (aba)</h3>
+<button class="close-modal" onclick="closeFaxModal()">&times;</button>
+</div>
+<form id="faxForm" onsubmit="handleFaxSubmit(event)">
+<div class="fax-field">
+<p class="fax-date"><strong>Date:</strong> <span id="faxDate"></span></p>
+</div>
+<div class="fax-field">
+<label for="faxType">Fax Type</label>
+<select id="faxType">
+<option>Monthly Report – Uganda Jamā'at</option>
+<option>Request for Dua</option>
+<option>Jalsa Salana Report</option>
+<option>Bai'at Report</option>
+<option>Region Update Report</option>
+<option>Other</option>
+</select>
+</div>
+<div class="fax-field">
+<label for="faxMessage">Message</label>
+<textarea id="faxMessage" placeholder="Enter your message to Huzoor (aba)..."></textarea>
+</div>
+<div class="modal-footer">
+<button type="button" class="confirm-btn confirm-no" onclick="closeFaxModal()">Cancel</button>
+<button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
+<i class="fas fa-paper-plane"></i> Send to Huzoor (aba)
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- ADD/EDIT REGION MODAL -->
+<div id="crudModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="modalTitle">Add New Region</h3>
+<button class="close-modal" onclick="closeModal()">&times;</button>
+</div>
+<form id="crudForm" onsubmit="handleFormSubmit(event)">
+<input type="hidden" id="regionId">
+<div class="form-row">
+<div class="form-group">
+<label for="regionName">Region Name <span style="color: var(--danger);">*</span></label>
+<input type="text" id="regionName" required placeholder="e.g., Central Region">
+</div>
+<div class="form-group">
+<label for="regionCode">Region Code</label>
+<input type="text" id="regionCode" placeholder="e.g., CENT" maxlength="10">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="latitude">Latitude <span style="color: var(--danger);">*</span></label>
+<input type="number" id="latitude" step="0.0001" min="-90" max="90" required placeholder="e.g., 0.3476">
+</div>
+<div class="form-group">
+<label for="longitude">Longitude <span style="color: var(--danger);">*</span></label>
+<input type="number" id="longitude" step="0.0001" min="-180" max="180" required placeholder="e.g., 32.5825">
+</div>
+</div>
+<div class="form-group">
+<label for="regionDescription">Description</label>
+<textarea id="regionDescription" rows="3" placeholder="Brief description of the region..."></textarea>
+</div>
+<div class="form-group">
+<label for="regionActive">Status</label>
+<select id="regionActive">
+<option value="true">Active</option>
+<option value="false">Inactive</option>
+</select>
+</div>
+<div class="modal-footer">
+<button type="button" class="confirm-btn confirm-no" onclick="closeModal()">Cancel</button>
+<button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
+<i class="fas fa-save"></i> Save Region
+</button>
+</div>
+</form>
+<!-- Subregion Management Section -->
+<div id="regionSubregionsSection" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border); display: none;">
+<div class="modal-action-bar">
+<h4 style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--black);">
+<i class="fas fa-layer-group" style="color: var(--info);"></i> Qiadats (Subregions)
+</h4>
+<button type="button" class="btn btn-add btn-small" onclick="openAddSubregionModal()">
+<i class="fas fa-plus"></i> Add Subregion
+</button>
+</div>
+<div id="regionSubregionsList" class="items-list" style="max-height: 300px;"></div>
+</div>
+</div>
+</div>
+<!-- SUBREGIONS MODAL -->
+<div id="subregionsModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="subregionsModalTitle">Qiadats</h3>
+<button class="close-modal" onclick="closeSubregionsModal()">&times;</button>
+</div>
+<div class="modal-action-bar">
+<button type="button" class="btn btn-add btn-small" onclick="openAddSubregionModalFromList()">
+<i class="fas fa-plus"></i> Add Subregion
+</button>
+</div>
+<div id="subregionsList" class="items-list"></div>
+</div>
+</div>
+<!-- MOSQUES MODAL -->
+<div id="mosquesModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="mosquesModalTitle">Mosques</h3>
+<button class="close-modal" onclick="closeMosquesModal()">&times;</button>
+</div>
+<div class="modal-action-bar">
+<button type="button" class="btn btn-add btn-small" onclick="openAddMosqueModal()">
+<i class="fas fa-plus"></i> Add Mosque
+</button>
+</div>
+<div id="mosquesList" class="items-list"></div>
+</div>
+</div>
+<!-- ADD/EDIT SUBREGION MODAL -->
+<div id="subregionCrudModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="subregionModalTitle">Add New Subregion</h3>
+<button class="close-modal" onclick="closeSubregionCrudModal()">&times;</button>
+</div>
+<form id="subregionCrudForm" onsubmit="handleSubregionFormSubmit(event)">
+<input type="hidden" id="subregionId">
+<input type="hidden" id="subregionRegionId">
+<div class="form-group">
+<label for="subregionName">Subregion Name (Qiadat) <span style="color: var(--danger);">*</span></label>
+<input type="text" id="subregionName" required placeholder="e.g., Kampala Qiadat">
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="subregionLatitude">Latitude <span style="color: var(--danger);">*</span></label>
+<input type="number" id="subregionLatitude" step="0.0001" min="-90" max="90" required placeholder="e.g., 0.3476">
+</div>
+<div class="form-group">
+<label for="subregionLongitude">Longitude <span style="color: var(--danger);">*</span></label>
+<input type="number" id="subregionLongitude" step="0.0001" min="-180" max="180" required placeholder="e.g., 32.5825">
+</div>
+</div>
+<div class="form-group">
+<label for="subregionDescription">Description</label>
+<textarea id="subregionDescription" rows="3" placeholder="Brief description of the subregion..."></textarea>
+</div>
+<div class="form-group">
+<label for="subregionActive">Status</label>
+<select id="subregionActive">
+<option value="true">Active</option>
+<option value="false">Inactive</option>
+</select>
+</div>
+<div class="modal-footer">
+<button type="button" class="confirm-btn confirm-no" onclick="closeSubregionCrudModal()">Cancel</button>
+<button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
+<i class="fas fa-save"></i> Save Subregion
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- ADD/EDIT MOSQUE MODAL -->
+<div id="mosqueCrudModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="mosqueModalTitle">Add New Mosque</h3>
+<button class="close-modal" onclick="closeMosqueCrudModal()">&times;</button>
+</div>
+<form id="mosqueCrudForm" onsubmit="handleMosqueFormSubmit(event)">
+<input type="hidden" id="mosqueId">
+<input type="hidden" id="mosqueSubregionId">
+<input type="hidden" id="mosqueRegionId">
+<div class="form-group">
+<label for="mosqueName">Mosque Name <span style="color: var(--danger);">*</span></label>
+<input type="text" id="mosqueName" required placeholder="e.g., Kampala Central Mosque">
+</div>
+<div class="form-group">
+<label for="mosqueSubregion">Select Subregion (Qiadat) <span style="color: var(--danger);">*</span></label>
+<select id="mosqueSubregion" required>
+<option value="">-- Select Subregion --</option>
+</select>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="mosqueLatitude">Latitude</label>
+<input type="number" id="mosqueLatitude" step="0.0001" min="-90" max="90" placeholder="e.g., 0.3476">
+</div>
+<div class="form-group">
+<label for="mosqueLongitude">Longitude</label>
+<input type="number" id="mosqueLongitude" step="0.0001" min="-180" max="180" placeholder="e.g., 32.5825">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label for="mosqueImamName">Imam Name</label>
+<input type="text" id="mosqueImamName" placeholder="e.g., Sheikh Ahmed">
+</div>
+<div class="form-group">
+<label for="mosqueContactNumber">Contact Number</label>
+<input type="tel" id="mosqueContactNumber" placeholder="e.g., +256 700 000 000">
+</div>
+</div>
+<div class="form-group">
+<label for="mosqueDescription">Description</label>
+<textarea id="mosqueDescription" rows="3" placeholder="Brief description of the mosque..."></textarea>
+</div>
+<div class="form-group">
+<label for="mosqueActive">Status</label>
+<select id="mosqueActive">
+<option value="true">Active</option>
+<option value="false">Inactive</option>
+</select>
+</div>
+<div class="modal-footer">
+<button type="button" class="confirm-btn confirm-no" onclick="closeMosqueCrudModal()">Cancel</button>
+<button type="submit" class="confirm-btn" style="background: var(--black); color: var(--white);">
+<i class="fas fa-save"></i> Save Mosque
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- MEMBERS MODAL -->
+<div id="membersModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title" id="membersModalTitle">Members</h3>
+<button class="close-modal" onclick="closeMembersModal()">&times;</button>
+</div>
+<div id="membersList" class="items-list"></div>
+</div>
+</div>
+<!-- MEMBER DETAILS MODAL -->
+<div id="memberDetailsModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title">Member Details</h3>
+<button class="close-modal" onclick="closeMemberDetailsModal()">&times;</button>
+</div>
+<div id="memberDetails"></div>
+</div>
+</div>
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3 class="modal-title">Confirm Deletion</h3>
+<button class="close-modal" onclick="closeDeleteModal()">&times;</button>
+</div>
+<div style="text-align: center; margin: 20px 0;">
+<i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+<p>Are you sure you want to remove <strong id="deleteRegionName"></strong>?</p>
+<p style="color: var(--medium-gray); font-size: 0.9rem; margin-top: 15px;">
+This action cannot be undone. All associated Qiadats, Mosques, and Member assignments will be affected.
+</p>
+</div>
+<div class="modal-footer">
+<button class="confirm-btn confirm-no" onclick="closeDeleteModal()">Cancel</button>
+<button class="confirm-btn confirm-yes" onclick="confirmDelete()">
+<i class="fas fa-trash"></i> Delete Region
+</button>
+</div>
+</div>
+</div>
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="toast">
+<i class="fas fa-check-circle"></i>
+<span id="toastMessage">Operation successful!</span>
+</div>
+<script>
+// ==================== SUPABASE CONFIGURATION ====================
+const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co".trim();
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo".trim();
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ==================== GLOBAL STATE ====================
+let regions = [];
+let subregions = [];
+let mosques = [];
+let members = [];
+let filteredRegions = [];
+let currentDeleteId = null;
+let currentRegionId = null; // For subregion/mosque management
+let currentSubregionId = null; // For mosque management
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', async () => {
+// Set fax date
+document.getElementById('faxDate').textContent = new Date().toLocaleDateString('en-GB', {
+day: 'numeric',
+month: 'long',
+year: 'numeric'
+});
+await loadAllData();
+setupRealtimeSubscription();
+});
+async function loadAllData() {
+showLoading(true);
+try {
+// Load all data in parallel
+const [regionsData, subregionsData, mosquesData, membersData] = await Promise.all([
+sb.from('regions').select('*').order('name'),
+sb.from('subregions').select('*'),
+sb.from('mosques').select('*'),
+sb.from('members').select('*')
+]);
+if (regionsData.error) throw regionsData.error;
+if (subregionsData.error) throw subregionsData.error;
+if (mosquesData.error) throw mosquesData.error;
+if (membersData.error) throw membersData.error;
+regions = regionsData.data || [];
+subregions = subregionsData.data || [];
+mosques = mosquesData.data || [];
+members = membersData.data || [];
+filteredRegions = [...regions];
+updateStats();
+renderRegionsList();
+} catch (error) {
+console.error('Error loading data:', error);
+showToast('Failed to load data', 'error');
+} finally {
+showLoading(false);
+}
+}
+function updateStats() {
+document.getElementById('totalRegionsStat').textContent = regions.length;
+document.getElementById('totalSubregionsStat').textContent = subregions.length;
+document.getElementById('totalMosquesStat').textContent = mosques.length;
+document.getElementById('totalMembersStat').textContent = members.length;
+}
+function filterRegions() {
+const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+filteredRegions = regions.filter(region =>
+region.name?.toLowerCase().includes(searchTerm) ||
+region.code?.toLowerCase().includes(searchTerm) ||
+region.description?.toLowerCase().includes(searchTerm)
+);
+renderRegionsList();
+}
+function renderRegionsList() {
+const list = document.getElementById('regionsList');
+const emptyState = document.getElementById('emptyState');
+if (filteredRegions.length === 0) {
+list.innerHTML = '';
+emptyState.style.display = regions.length === 0 ? 'block' : 'none';
+return;
+}
+emptyState.style.display = 'none';
+// Array of color classes to cycle through
+const colorClasses = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7', 'color-8'];
+list.innerHTML = filteredRegions.map((region, index) => {
+const regionSubregions = subregions.filter(s => s.region_id === region.id);
+const regionMosques = mosques.filter(m => m.region_id === region.id);
+const regionMembers = members.filter(m => m.region_id === region.id);
+// Assign a color class based on index (cycles through the 8 colors)
+const colorClass = colorClasses[index % colorClasses.length];
+return `
+<div class="region-row ${colorClass}">
+<div class="row-content">
+<div class="region-info">
+<div class="region-name-section">
+<h3 title="${escapeHtml(region.name)}">${escapeHtml(region.name)}</h3>
+${region.code ? `<span class="region-code">${escapeHtml(region.code)}</span>` : ''}
+</div>
+${region.description ? `
+<div class="region-description" title="${escapeHtml(region.description)}">
+${escapeHtml(region.description.substring(0, 100))}${region.description.length > 100 ? '...' : ''}
+</div>
+` : ''}
+</div>
+<div class="region-stats">
+<div class="stat-item" onclick="showSubregions('${region.id}', '${escapeHtml(region.name)}')" title="View subregions">
+<i class="fas fa-layer-group"></i>
+<span class="stat-number">${regionSubregions.length}</span>
+<span class="stat-label">Subregions</span>
+</div>
+<div class="stat-item" onclick="showMosques('${region.id}', '${escapeHtml(region.name)}')" title="View mosques">
+<i class="fas fa-mosque"></i>
+<span class="stat-number">${regionMosques.length}</span>
+<span class="stat-label">Mosques</span>
+</div>
+<div class="stat-item" onclick="showMembers('${region.id}', '${escapeHtml(region.name)}')" title="View members">
+<i class="fas fa-users"></i>
+<span class="stat-number">${regionMembers.length}</span>
+<span class="stat-label">Members</span>
+</div>
+</div>
+<div class="region-status">
+<span class="status-badge ${region.active ? 'active' : 'inactive'}">
+${region.active ? 'Active' : 'Inactive'}
+</span>
+</div>
+<div class="region-actions">
+<button class="action-btn edit-btn" onclick="openEditModal('${region.id}')" title="Edit region">
+<i class="fas fa-edit"></i>
+</button>
+<button class="action-btn delete-btn" onclick="openDeleteConfirm('${region.id}', '${escapeHtml(region.name)}')" title="Delete region">
+<i class="fas fa-trash"></i>
+</button>
+</div>
+</div>
+</div>
+`;
+}).join('');
+}
+// ==================== MODAL FUNCTIONS ====================
+function showSubregions(regionId, regionName) {
+currentRegionId = regionId;
+const regionSubregions = subregions.filter(s => s.region_id === regionId);
+document.getElementById('subregionsModalTitle').textContent = `Subregions - ${regionName}`;
+if (regionSubregions.length === 0) {
+document.getElementById('subregionsList').innerHTML = `
+<div class="empty-state" style="padding: 40px;">
+<i class="fas fa-layer-group"></i>
+<p>No subregions found in this region</p>
+</div>
+`;
+} else {
+document.getElementById('subregionsList').innerHTML = regionSubregions.map(sub => `
+<div class="item-row" onclick="showMosquesForSubregion('${sub.id}', '${escapeHtml(sub.name)}')">
+<div class="item-info">
+<h4>${escapeHtml(sub.name)}</h4>
+<p>
+<i class="fas fa-map-marker-alt"></i>
+${sub.latitude?.toFixed(3)}°, ${sub.longitude?.toFixed(3)}°
+</p>
+</div>
+<span class="item-badge ${sub.active ? 'active' : 'inactive'}">
+${sub.active ? 'Active' : 'Inactive'}
+</span>
+</div>
+`).join('');
+}
+document.getElementById('subregionsModal').style.display = 'flex';
+}
+function showMosques(regionId, regionName) {
+currentRegionId = regionId;
+const regionMosques = mosques.filter(m => m.region_id === regionId);
+document.getElementById('mosquesModalTitle').textContent = `Mosques - ${regionName}`;
+if (regionMosques.length === 0) {
+document.getElementById('mosquesList').innerHTML = `
+<div class="empty-state" style="padding: 40px;">
+<i class="fas fa-mosque"></i>
+<p>No mosques found in this region</p>
+</div>
+`;
+} else {
+document.getElementById('mosquesList').innerHTML = regionMosques.map(mosque => `
+<div class="item-row" onclick="showMosqueDetails('${mosque.id}')">
+<div class="item-info">
+<h4>${escapeHtml(mosque.name)}</h4>
+<p>
+<i class="fas fa-user"></i> Imam: ${escapeHtml(mosque.imam_name || 'Not assigned')}<br>
+<i class="fas fa-phone"></i> ${escapeHtml(mosque.contact_number || 'No contact')}
+</p>
+</div>
+<span class="item-badge ${mosque.active ? 'active' : 'inactive'}">
+${mosque.active ? 'Active' : 'Inactive'}
+</span>
+</div>
+`).join('');
+}
+document.getElementById('mosquesModal').style.display = 'flex';
+}
+function showMosquesForSubregion(subregionId, subregionName) {
+currentSubregionId = subregionId;
+const subregionMosques = mosques.filter(m => m.subregion_id === subregionId);
+document.getElementById('mosquesModalTitle').textContent = `Mosques - ${subregionName}`;
+if (subregionMosques.length === 0) {
+document.getElementById('mosquesList').innerHTML = `
+<div class="empty-state" style="padding: 40px;">
+<i class="fas fa-mosque"></i>
+<p>No mosques found in this subregion</p>
+</div>
+`;
+} else {
+document.getElementById('mosquesList').innerHTML = subregionMosques.map(mosque => `
+<div class="item-row" onclick="showMosqueDetails('${mosque.id}')">
+<div class="item-info">
+<h4>${escapeHtml(mosque.name)}</h4>
+<p>
+<i class="fas fa-user"></i> Imam: ${escapeHtml(mosque.imam_name || 'Not assigned')}<br>
+<i class="fas fa-phone"></i> ${escapeHtml(mosque.contact_number || 'No contact')}
+</p>
+</div>
+<span class="item-badge ${mosque.active ? 'active' : 'inactive'}">
+${mosque.active ? 'Active' : 'Inactive'}
+</span>
+</div>
+`).join('');
+}
+closeSubregionsModal();
+document.getElementById('mosquesModal').style.display = 'flex';
+}
+function showMembers(regionId, regionName) {
+const regionMembers = members.filter(m => m.region_id === regionId);
+document.getElementById('membersModalTitle').textContent = `Members - ${regionName}`;
+if (regionMembers.length === 0) {
+document.getElementById('membersList').innerHTML = `
+<div class="empty-state" style="padding: 40px;">
+<i class="fas fa-users"></i>
+<p>No members found in this region</p>
+</div>
+`;
+} else {
+document.getElementById('membersList').innerHTML = regionMembers.map(member => `
+<div class="item-row" onclick="showMemberDetails('${member.id}')">
+<div class="item-info">
+<h4>${escapeHtml(member.full_name)}</h4>
+<p>
+<i class="fas fa-id-card"></i> ${escapeHtml(member.member_id || 'No ID')}<br>
+<i class="fas fa-briefcase"></i> ${escapeHtml(member.position || 'Member')}
+</p>
+</div>
+<span class="item-badge ${member.status === 'Active' ? 'active' : 'inactive'}">
+${escapeHtml(member.status || 'Active')}
+</span>
+</div>
+`).join('');
+}
+document.getElementById('membersModal').style.display = 'flex';
+}
+async function showMemberDetails(memberId) {
+// Close members modal
+closeMembersModal();
+// Fetch full member details
+const member = members.find(m => m.id === memberId);
+if (!member) return;
+const region = regions.find(r => r.id === member.region_id);
+const subregion = subregions.find(s => s.id === member.subregion_id);
+const detailsHtml = `
+<div style="margin-bottom: 20px;">
+<div class="member-avatar">
+<i class="fas fa-user"></i>
+</div>
+<h2 style="text-align: center; margin-bottom: 20px; font-family: 'Cormorant Garamond', serif;">${escapeHtml(member.full_name)}</h2>
+<div class="member-detail-row">
+<div class="detail-group">
+<div class="detail-label">Member ID</div>
+<div class="detail-value"><i class="fas fa-id-card"></i> ${escapeHtml(member.member_id || 'Not assigned')}</div>
+</div>
+<div class="detail-group">
+<div class="detail-label">Status</div>
+<div class="detail-value">
+<span class="item-badge ${member.status === 'Active' ? 'active' : 'inactive'}">
+${escapeHtml(member.status || 'Active')}
+</span>
+</div>
+</div>
+</div>
+<div class="member-detail-row">
+<div class="detail-group">
+<div class="detail-label">Position</div>
+<div class="detail-value"><i class="fas fa-briefcase"></i> ${escapeHtml(member.position || 'Member')}</div>
+</div>
+<div class="detail-group">
+<div class="detail-label">Department</div>
+<div class="detail-value"><i class="fas fa-building"></i> ${escapeHtml(member.department || 'Not assigned')}</div>
+</div>
+</div>
+<div class="member-detail-row">
+<div class="detail-group">
+<div class="detail-label">Region</div>
+<div class="detail-value"><i class="fas fa-map-marked-alt"></i> ${escapeHtml(region?.name || 'Not assigned')}</div>
+</div>
+<div class="detail-group">
+<div class="detail-label">Subregion</div>
+<div class="detail-value"><i class="fas fa-layer-group"></i> ${escapeHtml(subregion?.name || 'Not assigned')}</div>
+</div>
+</div>
+<div class="member-detail-row">
+<div class="detail-group">
+<div class="detail-label">Phone</div>
+<div class="detail-value"><i class="fas fa-phone"></i> ${escapeHtml(member.phone || 'Not provided')}</div>
+</div>
+<div class="detail-group">
+<div class="detail-label">Email</div>
+<div class="detail-value"><i class="fas fa-envelope"></i> ${escapeHtml(member.email || 'Not provided')}</div>
+</div>
+</div>
+<div class="member-detail-row">
+<div class="detail-group">
+<div class="detail-label">Date Joined</div>
+<div class="detail-value"><i class="fas fa-calendar"></i> ${member.date_joined ? new Date(member.date_joined).toLocaleDateString() : 'Not recorded'}</div>
+</div>
+<div class="detail-group">
+<div class="detail-label">Age Group</div>
+<div class="detail-value"><i class="fas fa-users"></i> ${escapeHtml(member.age_group || 'Not calculated')}</div>
+</div>
+</div>
+${member.address ? `
+<div class="detail-group">
+<div class="detail-label">Address</div>
+<div class="detail-value"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(member.address)}</div>
+</div>
+` : ''}
+${member.flags && member.flags.length > 0 ? `
+<div class="detail-group">
+<div class="detail-label">Flags</div>
+<div class="detail-value">
+${member.flags.map(flag => `<span class="item-badge" style="margin-right: 5px; background: var(--info); color: white;">${escapeHtml(flag)}</span>`).join('')}
+</div>
+</div>
+` : ''}
+</div>
+`;
+document.getElementById('memberDetails').innerHTML = detailsHtml;
+document.getElementById('memberDetailsModal').style.display = 'flex';
+}
+function showSubregionDetails(subregionId) {
+closeSubregionsModal();
+showToast('Subregion details view coming soon', 'info');
+}
+function showMosqueDetails(mosqueId) {
+closeMosquesModal();
+showToast('Mosque details view coming soon', 'info');
+}
+function closeSubregionsModal() {
+document.getElementById('subregionsModal').style.display = 'none';
+}
+function closeMosquesModal() {
+document.getElementById('mosquesModal').style.display = 'none';
+}
+function closeMembersModal() {
+document.getElementById('membersModal').style.display = 'none';
+}
+function closeMemberDetailsModal() {
+document.getElementById('memberDetailsModal').style.display = 'none';
+}
+// ==================== CRUD OPERATIONS - REGIONS ====================
+function openAddModal() {
+document.getElementById('modalTitle').textContent = 'Add New Region';
+document.getElementById('crudForm').reset();
+document.getElementById('regionId').value = '';
+document.getElementById('latitude').value = 0.3476;
+document.getElementById('longitude').value = 32.5825;
+document.getElementById('regionActive').value = 'true';
+document.getElementById('regionSubregionsSection').style.display = 'none';
+currentRegionId = null;
+document.getElementById('crudModal').style.display = 'flex';
+}
+function openEditModal(id) {
+const region = regions.find(r => r.id === id);
+if (!region) return;
+currentRegionId = id;
+document.getElementById('modalTitle').textContent = 'Edit Region';
+document.getElementById('regionId').value = region.id;
+document.getElementById('regionName').value = region.name || '';
+document.getElementById('regionCode').value = region.code || '';
+document.getElementById('latitude').value = region.latitude || 0.3476;
+document.getElementById('longitude').value = region.longitude || 32.5825;
+document.getElementById('regionDescription').value = region.description || '';
+document.getElementById('regionActive').value = region.active ? 'true' : 'false';
+// Show subregion management section for edit mode
+document.getElementById('regionSubregionsSection').style.display = 'block';
+renderRegionSubregionsList(id);
+document.getElementById('crudModal').style.display = 'flex';
+}
+function renderRegionSubregionsList(regionId) {
+const regionSubregions = subregions.filter(s => s.region_id === regionId);
+const list = document.getElementById('regionSubregionsList');
+if (regionSubregions.length === 0) {
+list.innerHTML = `
+<div class="empty-state" style="padding: 20px;">
+<i class="fas fa-layer-group"></i>
+<p>No subregions added yet</p>
+</div>
+`;
+} else {
+list.innerHTML = regionSubregions.map(sub => `
+<div class="item-row">
+<div class="item-info">
+<h4>${escapeHtml(sub.name)}</h4>
+<p>
+<i class="fas fa-map-marker-alt"></i>
+${sub.latitude?.toFixed(3)}°, ${sub.longitude?.toFixed(3)}°
+</p>
+</div>
+<div style="display: flex; gap: 8px;">
+<button class="action-btn edit-btn" onclick="openEditSubregionModal('${sub.id}')" title="Edit subregion">
+<i class="fas fa-edit"></i>
+</button>
+<button class="action-btn delete-btn" onclick="deleteSubregion('${sub.id}')" title="Delete subregion">
+<i class="fas fa-trash"></i>
+</button>
+</div>
+</div>
+`).join('');
+}
+}
+function closeModal() {
+document.getElementById('crudModal').style.display = 'none';
+}
+async function handleFormSubmit(e) {
+e.preventDefault();
+const id = document.getElementById('regionId').value;
+const regionData = {
+name: document.getElementById('regionName').value.trim(),
+code: document.getElementById('regionCode').value.trim().toUpperCase() || null,
+latitude: parseFloat(document.getElementById('latitude').value),
+longitude: parseFloat(document.getElementById('longitude').value),
+description: document.getElementById('regionDescription').value.trim() || null,
+active: document.getElementById('regionActive').value === 'true'
+};
+if (!regionData.name) {
+showToast('Region name is required', 'error');
+return;
+}
+try {
+if (id) {
+const { error } = await sb.from('regions').update(regionData).eq('id', id);
+if (error) throw error;
+showToast('Region updated successfully', 'success');
+} else {
+const { error } = await sb.from('regions').insert([regionData]);
+if (error) throw error;
+showToast('Region added successfully', 'success');
+}
+closeModal();
+await loadAllData();
+} catch (error) {
+console.error('Error saving region:', error);
+showToast('Failed to save region', 'error');
+}
+}
+function openDeleteConfirm(id, name) {
+currentDeleteId = id;
+document.getElementById('deleteRegionName').textContent = `"${name}"`;
+document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeDeleteModal() {
+document.getElementById('deleteModal').style.display = 'none';
+currentDeleteId = null;
+}
+async function confirmDelete() {
+if (!currentDeleteId) return;
+try {
+const { error } = await sb.from('regions').delete().eq('id', currentDeleteId);
+if (error) throw error;
+showToast('Region deleted successfully', 'success');
+closeDeleteModal();
+await loadAllData();
+} catch (error) {
+console.error('Error deleting region:', error);
+showToast('Failed to delete region', 'error');
+}
+}
+// ==================== CRUD OPERATIONS - SUBREGIONS ====================
+function openAddSubregionModal() {
+if (!currentRegionId) {
+showToast('Please save the region first', 'error');
+return;
+}
+document.getElementById('subregionModalTitle').textContent = 'Add New Subregion';
+document.getElementById('subregionCrudForm').reset();
+document.getElementById('subregionId').value = '';
+document.getElementById('subregionRegionId').value = currentRegionId;
+document.getElementById('subregionLatitude').value = 0.3476;
+document.getElementById('subregionLongitude').value = 32.5825;
+document.getElementById('subregionActive').value = 'true';
+document.getElementById('subregionCrudModal').style.display = 'flex';
+}
+function openAddSubregionModalFromList() {
+if (!currentRegionId) {
+showToast('No region selected', 'error');
+return;
+}
+openAddSubregionModal();
+}
+function openEditSubregionModal(id) {
+const subregion = subregions.find(s => s.id === id);
+if (!subregion) return;
+document.getElementById('subregionModalTitle').textContent = 'Edit Subregion';
+document.getElementById('subregionId').value = subregion.id;
+document.getElementById('subregionRegionId').value = subregion.region_id;
+document.getElementById('subregionName').value = subregion.name || '';
+document.getElementById('subregionLatitude').value = subregion.latitude || 0.3476;
+document.getElementById('subregionLongitude').value = subregion.longitude || 32.5825;
+document.getElementById('subregionDescription').value = subregion.description || '';
+document.getElementById('subregionActive').value = subregion.active ? 'true' : 'false';
+document.getElementById('subregionCrudModal').style.display = 'flex';
+}
+function closeSubregionCrudModal() {
+document.getElementById('subregionCrudModal').style.display = 'none';
+}
+async function handleSubregionFormSubmit(e) {
+e.preventDefault();
+const id = document.getElementById('subregionId').value;
+const regionId = document.getElementById('subregionRegionId').value;
+const subregionData = {
+name: document.getElementById('subregionName').value.trim(),
+region_id: regionId,
+latitude: parseFloat(document.getElementById('subregionLatitude').value),
+longitude: parseFloat(document.getElementById('subregionLongitude').value),
+description: document.getElementById('subregionDescription').value.trim() || null,
+active: document.getElementById('subregionActive').value === 'true'
+};
+if (!subregionData.name) {
+showToast('Subregion name is required', 'error');
+return;
+}
+try {
+if (id) {
+const { error } = await sb.from('subregions').update(subregionData).eq('id', id);
+if (error) throw error;
+showToast('Subregion updated successfully', 'success');
+} else {
+const { error } = await sb.from('subregions').insert([subregionData]);
+if (error) throw error;
+showToast('Subregion added successfully', 'success');
+}
+closeSubregionCrudModal();
+await loadAllData();
+if (currentRegionId) {
+renderRegionSubregionsList(currentRegionId);
+}
+} catch (error) {
+console.error('Error saving subregion:', error);
+showToast('Failed to save subregion', 'error');
+}
+}
+async function deleteSubregion(id) {
+if (!confirm('Are you sure you want to delete this subregion? All associated mosques will be affected.')) {
+return;
+}
+try {
+const { error } = await sb.from('subregions').delete().eq('id', id);
+if (error) throw error;
+showToast('Subregion deleted successfully', 'success');
+await loadAllData();
+if (currentRegionId) {
+renderRegionSubregionsList(currentRegionId);
+}
+} catch (error) {
+console.error('Error deleting subregion:', error);
+showToast('Failed to delete subregion', 'error');
+}
+}
+// ==================== CRUD OPERATIONS - MOSQUES ====================
+function openAddMosqueModal() {
+document.getElementById('mosqueModalTitle').textContent = 'Add New Mosque';
+document.getElementById('mosqueCrudForm').reset();
+document.getElementById('mosqueId').value = '';
+document.getElementById('mosqueRegionId').value = currentRegionId || '';
+document.getElementById('mosqueSubregionId').value = currentSubregionId || '';
+document.getElementById('mosqueActive').value = 'true';
+// Populate subregion dropdown
+populateSubregionDropdown();
+document.getElementById('mosqueCrudModal').style.display = 'flex';
+}
+function populateSubregionDropdown() {
+const select = document.getElementById('mosqueSubregion');
+select.innerHTML = '<option value="">-- Select Subregion --</option>';
+// Filter subregions by current region if available
+const filteredSubregions = currentRegionId 
+? subregions.filter(s => s.region_id === currentRegionId)
+: subregions;
+filteredSubregions.forEach(sub => {
+const option = document.createElement('option');
+option.value = sub.id;
+option.textContent = sub.name;
+if (currentSubregionId && sub.id === currentSubregionId) {
+option.selected = true;
+}
+select.appendChild(option);
+});
+}
+function closeMosqueCrudModal() {
+document.getElementById('mosqueCrudModal').style.display = 'none';
+}
+async function handleMosqueFormSubmit(e) {
+e.preventDefault();
+const id = document.getElementById('mosqueId').value;
+const subregionId = document.getElementById('mosqueSubregion').value;
+const subregion = subregions.find(s => s.id === subregionId);
+const mosqueData = {
+name: document.getElementById('mosqueName').value.trim(),
+subregion_id: subregionId || null,
+region_id: subregion?.region_id || currentRegionId || null,
+latitude: document.getElementById('mosqueLatitude').value ? parseFloat(document.getElementById('mosqueLatitude').value) : null,
+longitude: document.getElementById('mosqueLongitude').value ? parseFloat(document.getElementById('mosqueLongitude').value) : null,
+imam_name: document.getElementById('mosqueImamName').value.trim() || null,
+contact_number: document.getElementById('mosqueContactNumber').value.trim() || null,
+description: document.getElementById('mosqueDescription').value.trim() || null,
+active: document.getElementById('mosqueActive').value === 'true'
+};
+if (!mosqueData.name) {
+showToast('Mosque name is required', 'error');
+return;
+}
+try {
+if (id) {
+const { error } = await sb.from('mosques').update(mosqueData).eq('id', id);
+if (error) throw error;
+showToast('Mosque updated successfully', 'success');
+} else {
+const { error } = await sb.from('mosques').insert([mosqueData]);
+if (error) throw error;
+showToast('Mosque added successfully', 'success');
+}
+closeMosqueCrudModal();
+await loadAllData();
+} catch (error) {
+console.error('Error saving mosque:', error);
+showToast('Failed to save mosque', 'error');
+}
+}
+// ==================== FAX MODAL FUNCTIONS ====================
+function showFaxModal() {
+document.getElementById('faxModal').style.display = 'flex';
+}
+function closeFaxModal() {
+document.getElementById('faxModal').style.display = 'none';
+document.getElementById('faxForm').reset();
+}
+function handleFaxSubmit(e) {
+e.preventDefault();
+showToast('Fax sent successfully to Huzoor (aba)', 'success');
+closeFaxModal();
+}
+// ==================== UTILITY FUNCTIONS ====================
+function showLoading(show) {
+document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+document.getElementById('regionsList').style.display = show ? 'none' : 'block';
+}
+function performSearch(event) {
+if (event.key === 'Enter') {
+document.getElementById('searchInput').value = event.target.value;
+filterRegions();
+}
+}
+function showToast(message, type = 'success') {
+const toast = document.getElementById('toast');
+document.getElementById('toastMessage').textContent = message;
+toast.className = `toast ${type}`;
+toast.style.display = 'block';
+const icon = toast.querySelector('i');
+icon.className = type === 'success' ? 'fas fa-check-circle' :
+type === 'error' ? 'fas fa-exclamation-circle' :
+'fas fa-info-circle';
+setTimeout(() => {
+toast.style.display = 'none';
+}, 3000);
+}
+function escapeHtml(text) {
+if (!text) return '';
+const div = document.createElement('div');
+div.textContent = text;
+return div.innerHTML;
+}
+function logout() {
+showToast('Logged out successfully');
+setTimeout(() => {
+window.location.href = 'index.html';
+}, 1000);
+}
+function setupRealtimeSubscription() {
+sb.channel('regions-changes')
+.on('postgres_changes', { event: '*', schema: 'public', table: 'regions' }, () => loadAllData())
+.on('postgres_changes', { event: '*', schema: 'public', table: 'subregions' }, () => loadAllData())
+.on('postgres_changes', { event: '*', schema: 'public', table: 'mosques' }, () => loadAllData())
+.on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => loadAllData())
+.subscribe();
+}
+// Close modals when clicking outside
+window.onclick = function(event) {
+if (event.target.classList.contains('modal')) {
+event.target.style.display = 'none';
+}
+};
+// Fax button click handler
+document.getElementById('faxTab').onclick = showFaxModal;
+</script>
 </body>
 </html>
