@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Umoomi Security · Members Registry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<style>
+/* --- GLOBAL RESET & BASE --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background: #f4f6f9;
+  height: 100vh;
+  overflow: hidden;
+  padding: 20px;
+  color: #1e3f5f;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- HEADER --- */
+header {
+  background: linear-gradient(145deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 20px 28px;
+  border-radius: 28px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  box-shadow: 0 8px 18px rgba(0,20,30,0.06);
+  flex-shrink: 0;
+}
+header .logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 3px solid #1e3f5f;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+header h2 {
+  font-weight: 600;
+  color: #0b2a41;
+  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+header small {
+  color: #3a5e7a;
+  font-size: 0.9rem;
+  display: block;
+  margin-top: 4px;
+}
+
+/* --- LAYOUT GRID --- */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  height: calc(100vh - 140px);
+  overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+aside {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 16px 10px;
+  box-shadow: 0 12px 28px rgba(0,20,40,0.06);
+  backdrop-filter: blur(2px);
+  height: fit-content;
+  max-height: 100%;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+aside a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 18px;
+  color: #1e3b5c;
+  font-weight: 500;
+  margin-bottom: 6px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+aside a i { width: 22px; font-size: 1.2rem; text-align: center; }
+aside a:hover, aside a.active {
+  background: #1d4d7c;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(27,85,140,0.3);
+}
+aside a.active { background: #113753; }
+
+/* --- MAIN PANEL --- */
+main {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 24px 28px;
+  box-shadow: 0 16px 30px rgba(0,10,30,0.04);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- STATS CARDS --- */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+.stat-card {
+  background: linear-gradient(145deg, #1e3f5f, #2c5a85);
+  color: white;
+  padding: 20px 14px;
+  border-radius: 26px;
+  text-align: center;
+  box-shadow: 0 16px 28px -8px #1d3f5e60;
+}
+.stat-card i { font-size: 2rem; opacity: 0.95; margin-bottom: 8px; }
+.stat-card .stat-number { font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; line-height: 1.2; }
+.stat-card .stat-label { font-size: 0.9rem; opacity: 0.9; }
+
+/* --- SEARCH BAR --- */
+.search {
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+.search input {
+  width: 100%;
+  padding: 14px 20px 14px 45px;
+  border: 2px solid #d1e3f3;
+  border-radius: 40px;
+  font-size: 1rem;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+  color: #1e3f5f;
+}
+.search input:focus {
+  border-color: #1d4d7c;
+  box-shadow: 0 0 0 3px rgba(29, 77, 124, 0.15);
+  background: white;
+}
+.search i {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* --- TABLE CONTAINER --- */
+.table-container {
+  background: #f8faff;
+  border-radius: 24px;
+  padding: 4px;
+  flex: 1;
+  overflow: auto;
+  margin-bottom: 10px;
+  border: 1px solid rgba(148, 184, 218, 0.2);
+}
+
+/* --- TABLE STYLING --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 20px;
+  overflow: hidden;
+}
+th {
+  background: #1d4d7c;
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(148, 184, 218, 0.2);
+  background: white;
+}
+tr:hover td {
+  background: #f0f7ff;
+  cursor: pointer;
+}
+tr:last-child td { border-bottom: none; }
+
+/* --- BADGE STYLING --- */
+.badge {
+  padding: 6px 14px;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+}
+.badge.active { background: linear-gradient(145deg, #27ae60, #2ecc71); }
+.badge.suspended { background: linear-gradient(145deg, #c0392b, #e74c3c); }
+.badge.inactive { background: linear-gradient(145deg, #7f8c8d, #95a5a6); }
+
+/* --- MODAL --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 25, 45, 0.6);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+/* --- SIMPLIFIED PROFILE CARD --- */
+.profile-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 32px;
+  box-shadow: 0 40px 60px rgba(0,15,40,0.4);
+  border: 1px solid #b9d4f0;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  background: #f4faff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e3f5f;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.15s ease;
+  font-size: 1rem;
+  border: 2px solid #d1e3f3;
+}
+.close-btn:hover {
+  background: #fdecea;
+  color: #c63737;
+  border-color: #e74c3c;
+  transform: rotate(90deg);
+}
+
+/* Profile Header with Photo */
+.profile-header {
+  background: linear-gradient(145deg, #1e3f5f, #2c5a85);
+  padding: 30px 25px 20px;
+  text-align: center;
+  position: relative;
+}
+.profile-photo-large {
+  width: 120px;
+  height: 140px;
+  margin: 0 auto 15px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.profile-photo-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-photo-large i {
+  color: rgba(255,255,255,0.6);
+  font-size: 3.5rem;
+}
+.profile-header h2 {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.profile-header .member-id {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  font-family: monospace;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Profile Body - Basic Info Only */
+.profile-body {
+  padding: 25px;
+}
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.info-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8faff;
+  border-radius: 14px;
+  border: 1px solid #e0e9f0;
+}
+.info-row i {
+  width: 24px;
+  color: #1d4d7c;
+  margin-right: 12px;
+  font-size: 1.1rem;
+}
+.info-row .label {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  width: 80px;
+}
+.info-row .value {
+  flex: 1;
+  color: #1e3f5f;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.info-row .badge {
+  margin-left: auto;
+}
+
+/* QR Button */
+.qr-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(145deg, #8e44ad, #9b59b6);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.qr-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(142, 68, 173, 0.3);
+}
+
+/* QR Modal */
+.qr-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 25, 45, 0.6);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.qr-box {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  text-align: center;
+  max-width: 300px;
+}
+.qr-box h4 {
+  margin-bottom: 20px;
+  color: #1e3f5f;
+  font-size: 1.1rem;
+}
+#qrcode {
+  margin: 0 auto 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 16px;
+  display: inline-block;
+  border: 1px solid #d1e3f3;
+}
+.qr-member-id {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e3f5f;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background: #f8faff;
+  border-radius: 10px;
+  display: inline-block;
+}
+.btn-copy {
+  padding: 10px 24px;
+  background: linear-gradient(145deg, #1e3f5f, #2c5a85);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.btn-copy:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(29,77,124,0.25); }
+.btn-copy.copied { background: linear-gradient(145deg, #27ae60, #2ecc71); }
+
+/* Custom scrollbar */
+main::-webkit-scrollbar,
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+main::-webkit-scrollbar-track,
+aside::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+main::-webkit-scrollbar-thumb,
+aside::-webkit-scrollbar-thumb {
+  background: #1e3f5f;
+  border-radius: 10px;
+}
+main::-webkit-scrollbar-thumb:hover,
+aside::-webkit-scrollbar-thumb:hover {
+  background: #2c5a85;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- HEADER -->
+  <header>
+    <img src="https://avatars.githubusercontent.com/u/214355993?v=4" alt="Umoomi Logo" class="logo" onerror="this.src='https://via.placeholder.com/56x56?text=UM'">
+    <div>
+      <h2>Umoomi Security · Members Registry</h2>
+      <small>Majlis Khuddamul Ahmadiyya Uganda · official member database</small>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside>
+      <a href="department_bb485cd8-db88-46dc-b9c5-e196fa963f5e.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a href="u-members.html" class="active"><i class="fas fa-people-group"></i> Members</a>
+      <a href="u-scanner.html"><i class="fas fa-qrcode"></i> Scan ID</a>
+      <a href="u-regions.html"><i class="fas fa-map-locations"></i> Regions</a>
+      <a href="u-scan-logs.html"><i class="fas fa-clock-rotate-left"></i> Activity Logs</a>
+      <a href="u-settings.html"><i class="fas fa-gear"></i> Settings</a>
+    </aside>
+
+    <!-- MAIN PANEL -->
+    <main>
+      <!-- Stats Cards -->
+      <div class="quick-stats" id="quickStats">
+        <div class="stat-card">
+          <i class="fas fa-users"></i>
+          <div class="stat-number" id="statTotal">0</div>
+          <div class="stat-label">Total Members</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-user-check"></i>
+          <div class="stat-number" id="statActive">0</div>
+          <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-user-clock"></i>
+          <div class="stat-number" id="statSuspended">0</div>
+          <div class="stat-label">Suspended</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-user-minus"></i>
+          <div class="stat-number" id="statInactive">0</div>
+          <div class="stat-label">Inactive</div>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="search">
+        <i class="fas fa-search"></i>
+        <input id="search" type="text" placeholder="Search members by name or ID...">
+      </div>
+
+      <!-- Table container -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Region</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="membersBody">
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:#7f8c8d"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:15px">Loading members...</p></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- SIMPLIFIED PROFILE MODAL -->
+<div class="modal" id="modal"></div>
+
+<!-- QR CODE MODAL -->
+<div class="qr-modal" id="qrModal">
+  <div class="qr-box">
+    <div class="close-btn" id="closeQR" style="position:relative;top:0;right:0;margin:-10px -10px 10px auto;background:#f4faff"><i class="fas fa-times"></i></div>
+    <h4><i class="fas fa-qrcode"></i> Member QR Code</h4>
+    <div id="qrcode"></div>
+    <div class="qr-member-id" id="qrMemberId">—</div>
+    <button class="btn-copy" id="btnCopyId">
+      <i class="fas fa-copy"></i> Copy ID
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async ()=>{
+
+  const supabase = window.supabase.createClient(
+    "https://pqrsljahrnjgkadflbmr.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo"
+  );
+
+  const body = document.getElementById("membersBody");
+  const search = document.getElementById("search");
+  const modal = document.getElementById("modal");
+  const qrModal = document.getElementById("qrModal");
+
+  let members = [];
+
+  // ✅ SIMPLE LOAD - Just like your original
+  try {
+    const { data, error } = await supabase.from("members").select("*");
+    if (error) throw error;
+    members = data || [];
+    render(members);
+    updateStats(members);
+  } catch (err) {
+    console.error("Error loading members:", err);
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#c63737"><i class="fas fa-exclamation-triangle fa-2x"></i><p style="margin-top:15px">Failed to load members. Please check your connection.</p></td></tr>`;
+  }
+
+  function badge(status) {
+    const s = (status || 'inactive').toLowerCase();
+    const labels = { active: 'Active', suspended: 'Suspended', inactive: 'Inactive' };
+    return `<span class="badge ${s}">${labels[s] || 'Inactive'}</span>`;
+  }
+
+  function updateStats(membersList) {
+    const total = membersList.length;
+    const active = membersList.filter(m => m.status && m.status.toLowerCase() === 'active').length;
+    const suspended = membersList.filter(m => m.status && m.status.toLowerCase() === 'suspended').length;
+    const inactive = membersList.filter(m => !m.status || m.status.toLowerCase() === 'inactive').length;
+    
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statSuspended').textContent = suspended;
+    document.getElementById('statInactive').textContent = inactive;
+  }
+
+  function render(list) {
+    if (!list || list.length === 0) {
+      body.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#7f8c8d"><i class="fas fa-users fa-2x"></i><p style="margin-top:15px">No members found</p></td></tr>`;
+      return;
+    }
+    
+    body.innerHTML = list.map(m => `
+      <tr data-id="${m.member_id}">
+        <td>${m.member_id}</td>
+        <td>${m.full_name}</td>
+        <td>${m.position || '-'}</td>
+        <td>${m.region || '-'}</td>
+        <td>${badge(m.status)}</td>
+      </tr>
+    `).join("");
+
+    document.querySelectorAll("tbody tr").forEach(row => {
+      row.addEventListener("click", () => {
+        const member = members.find(m => m.member_id === row.dataset.id);
+        if (member) openProfile(member);
+      });
+    });
+  }
+
+  search.oninput = e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = members.filter(m =>
+      (m.full_name && m.full_name.toLowerCase().includes(q)) ||
+      (m.member_id && m.member_id.toLowerCase().includes(q))
+    );
+    render(filtered);
+    updateStats(filtered);
+  };
+
+  /* === SIMPLIFIED PROFILE MODAL === */
+  function openProfile(member) {
+    modal.style.display = "flex";
+
+    modal.innerHTML = `
+    <div class="profile-card">
+      <div class="close-btn" id="closeModal"><i class="fas fa-times"></i></div>
+      
+      <!-- Header with Photo -->
+      <div class="profile-header">
+        <div class="profile-photo-large">
+          ${member.photo_url 
+            ? `<img src="${member.photo_url}" alt="${member.full_name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user-circle\\'></i>'">` 
+            : `<i class="fas fa-user-circle"></i>`}
+        </div>
+        <h2>${member.full_name || '—'}</h2>
+        <div class="member-id">${member.member_id}</div>
+      </div>
+      
+      <!-- Basic Info Only -->
+      <div class="profile-body">
+        <div class="info-list">
+          <div class="info-row">
+            <i class="fas fa-briefcase"></i>
+            <span class="label">Position</span>
+            <span class="value">${member.position || '—'}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="label">Region</span>
+            <span class="value">${member.region || '—'}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-user-tag"></i>
+            <span class="label">Status</span>
+            <span class="value">${badge(member.status)}</span>
+          </div>
+          ${member.phone ? `
+          <div class="info-row">
+            <i class="fas fa-phone"></i>
+            <span class="label">Phone</span>
+            <span class="value">${member.phone}</span>
+          </div>` : ''}
+          ${member.email ? `
+          <div class="info-row">
+            <i class="fas fa-envelope"></i>
+            <span class="label">Email</span>
+            <span class="value">${member.email}</span>
+          </div>` : ''}
+        </div>
+        
+        <!-- QR Code Button -->
+        <button class="qr-btn" id="showQR">
+          <i class="fas fa-qrcode"></i> Show QR Code
+        </button>
+      </div>
+    </div>`;
+
+    // Close handlers
+    document.getElementById("closeModal").onclick = () => { modal.style.display = "none"; };
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+    
+    // QR Button
+    document.getElementById("showQR").onclick = () => showQRCode(member.member_id);
+  }
+
+  /* === QR CODE MODAL === */
+  function showQRCode(memberId) {
+    qrModal.style.display = "flex";
+    document.getElementById('qrMemberId').textContent = memberId;
+    
+    // Generate QR
+    document.getElementById('qrcode').innerHTML = '';
+    new QRCode(document.getElementById('qrcode'), {
+      text: memberId,
+      width: 180,
+      height: 180,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    
+    // Close handlers
+    const closeQR = () => qrModal.style.display = "none";
+    document.getElementById("closeQR").onclick = closeQR;
+    qrModal.onclick = (e) => { if (e.target === qrModal) closeQR(); };
+    
+    // Copy button
+    document.getElementById("btnCopyId").onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(memberId);
+        const btn = document.getElementById("btnCopyId");
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy ID';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        alert('Failed to copy ID');
+      }
+    };
+  }
+
+  // Keyboard support
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      modal.style.display = "none";
+      qrModal.style.display = "none";
+    }
+  });
+
+  // Set active nav link
+  document.querySelectorAll("aside a").forEach(l => {
+    if (l.getAttribute("href") === "u-members.html") l.classList.add("active");
+  });
+});
+</script>
+</body>
+</html>
