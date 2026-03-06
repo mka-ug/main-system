@@ -278,15 +278,13 @@ KHUDDAM-UL-AHMADIYYA
 <th>Full Name</th>
 <th>Age</th>
 <th>Profession</th>
-<th>Subregion</th>
 <th>Region</th>
-<th>Phone</th>
 <th>Status</th>
 <th>Actions</th>
 </tr>
 </thead>
 <tbody id="membersTable">
-<tr><td colspan="9" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading members...</td></tr>
+<tr><td colspan="7" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading members...</td></tr>
 </tbody>
 </table>
 </div>
@@ -305,6 +303,14 @@ KHUDDAM-UL-AHMADIYYA
 <div class="form-group full-width">
 <label>Full Name *</label>
 <input type="text" id="fullName" required placeholder="Enter full name">
+</div>
+<div class="form-group">
+<label>Son of (Father's Name)</label>
+<input type="text" id="fatherName" placeholder="Enter father's name">
+</div>
+<div class="form-group">
+<label>Wasiyyat Number</label>
+<input type="text" id="wasiyyatNumber" placeholder="Enter unique number">
 </div>
 <div class="form-group">
 <label>Member ID</label>
@@ -415,32 +421,29 @@ const SUPABASE_URL = "https://pqrsljahrnjgkadflbmr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcnNsamFocm5qZ2thZGZsYm1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NTg0NTYsImV4cCI6MjA4NjEzNDQ1Nn0.egED0C2iRp6j3Xp4ldgrdI0GBep2J7VUR52rBbzsVdo";
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // === PROFESSION DATA STRUCTURE ===
 const PROFESSION_OPTIONS = {
-    "Student": ["Primary (P1-P7)", "O-Level (S1-S4)", "A-Level (S5-S6)", "Tertiary (Year 1-3)", "University (Undergrad)", "University (Graduate)", "University (Postgrad)"],
-    "Agriculture & Agribusiness": ["Farmer", "Agribusiness Manager", "Agronomist"],
-    "Transport & Logistics": ["Boda Boda Rider", "Taxi Driver", "Heavy Truck Driver"],
-    "Health Care": ["Doctor", "Nurse", "Midwife", "Lab Tech", "Dentist", "Physiotherapist", "Veterinarian", "Pharmacist"],
-    "Trade & Services": ["Sales Agent", "Retailer", "Wholesaler"],
-    "Education & Social Services": ["Teacher", "Instructor", "Professor", "Social Worker", "Counselor"],
-    "Legal & Finance": ["Lawyer", "Accountant", "Banker", "Financial Analyst"],
-    "Office Administrator and Customer Care": ["Office Administrator", "Customer Care Representative"],
-    "Information Technology (IT)": ["Software Developer", "Data Analyst", "Cybersecurity Specialist", "Virtual Assistant", "Digital Marketing Specialist"],
-    "Construction": ["Builder", "Civil Engineer", "Construction Project Manager"],
-    "Tourism & Hospitality": ["Tour Guide", "Hotel Manager"],
-    "Informal Sector": ["Hair Stylist", "Tailor", "Mechanic", "Street Vendor", "Househelp", "Gardener"],
-    "Engineering & Tech": ["Civil Engineer", "Software Developer", "IT Consultant", "Data Scientist"],
-    "Creative & Professional Services": ["Architect", "Journalist", "Designer", "Author"],
-    "Regulated/Skilled Trades": ["Electrician", "Plumber", "Carpenter", "Builder"]
+"Student": ["Primary (P1-P7)", "O-Level (S1-S4)", "A-Level (S5-S6)", "Tertiary (Year 1-3)", "University (Undergrad)", "University (Graduate)", "University (Postgrad)"],
+"Agriculture & Agribusiness": ["Farmer", "Agribusiness Manager", "Agronomist"],
+"Transport & Logistics": ["Boda Boda Rider", "Taxi Driver", "Heavy Truck Driver"],
+"Health & Social Services": ["Doctor", "Nurse", "Midwife", "Lab Tech", "Dentist", "Physiotherapist", "Veterinarian", "Pharmacist"],
+"Trade & Services": ["Sales Agent", "Retailer", "Wholesaler"],
+"Education & Social Services": ["Teacher", "Instructor", "Professor", "Social Worker", "Counselor"],
+"Legal & Finance": ["Lawyer", "Accountant", "Banker", "Financial Analyst"],
+"Office Administrator and Customer Care": ["Office Administrator", "Customer Care Representative"],
+"Information Technology (IT)": ["Software Developer", "Data Analyst", "Cybersecurity Specialist", "Virtual Assistant", "Digital Marketing Specialist"],
+"Construction": ["Builder", "Civil Engineer", "Construction Project Manager"],
+"Tourism & Hospitality": ["Tour Guide", "Hotel Manager"],
+"Informal Sector": ["Hair Stylist", "Tailor", "Mechanic", "Street Vendor", "Househelp", "Gardener"],
+"Engineering & Tech": ["Civil Engineer", "Software Developer", "IT Consultant", "Data Scientist"],
+"Creative & Professional Services": ["Architect", "Journalist", "Designer", "Author"],
+"Regulated/Skilled Trades": ["Electrician", "Plumber", "Carpenter", "Builder"]
 };
-
 // State
 let allMembers = [], allSubregions = [], allRegions = [], allDepartments = [];
 let currentRegionId = null;
 let regionNames = {}, subregionNames = {}, departmentNames = {};
 let hideNonKhuddam = false;
-
 // === HELPERS ===
 function escapeHtml(str) {
 if (!str) return str;
@@ -471,7 +474,6 @@ didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toas
 });
 Toast.fire({ icon: type, title: msg });
 }
-
 // === LOAD DROPDOWNS ===
 async function loadDropdownData() {
 try {
@@ -492,7 +494,6 @@ filterOpts += `<option value="${r.id}">${escapeHtml(r.name)}</option>`;
 document.getElementById('regionSelector').innerHTML = selOpts;
 document.getElementById('region').innerHTML = formOpts;
 document.getElementById('regionFilter').innerHTML = filterOpts;
-
 // Departments
 const { data: depts, error: deptErr } = await supabase.from('departments').select('id, name').order('name');
 if (deptErr) throw deptErr;
@@ -504,46 +505,39 @@ departmentNames[d.id] = d.name;
 deptOpts += `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
 });
 document.getElementById('departmentId').innerHTML = deptOpts;
-
 // Subregions
 const { data: subs, error: subErr } = await supabase.from('subregions').select('id, region_id, name').eq('active', true).order('name');
 if (subErr) throw subErr;
 allSubregions = subs || [];
 subregionNames = {};
 allSubregions.forEach(s => subregionNames[s.id] = s.name);
-
 // Profession Categories
 const profCatSel = document.getElementById('professionCategory');
 let profOpts = '<option value="">Select Category</option>';
 Object.keys(PROFESSION_OPTIONS).forEach(cat => {
-    profOpts += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+profOpts += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
 });
 profCatSel.innerHTML = profOpts;
-
 } catch (err) {
 console.error('Dropdown load error:', err);
 showNotification('Could not load dropdown data', 'error');
 }
 }
-
 // === LOAD PROFESSION DETAILS (CASCADING) ===
 window.loadProfessionDetails = function() {
-    const category = document.getElementById('professionCategory').value;
-    const detailSel = document.getElementById('professionDetail');
-    detailSel.innerHTML = '<option value="">Select Profession</option>';
-    
-    if (!category) {
-        detailSel.disabled = true;
-        return;
-    }
-    
-    detailSel.disabled = false;
-    const options = PROFESSION_OPTIONS[category] || [];
-    options.forEach(opt => {
-        detailSel.innerHTML += `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`;
-    });
+const category = document.getElementById('professionCategory').value;
+const detailSel = document.getElementById('professionDetail');
+detailSel.innerHTML = '<option value="">Select Profession</option>';
+if (!category) {
+detailSel.disabled = true;
+return;
+}
+detailSel.disabled = false;
+const options = PROFESSION_OPTIONS[category] || [];
+options.forEach(opt => {
+detailSel.innerHTML += `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}<\/option>`;
+});
 };
-
 // === LOAD SUBREGIONS FOR FORM ===
 async function loadSubregionsForForm() {
 const regionId = document.getElementById('region').value;
@@ -559,7 +553,6 @@ let opts = '<option value="">Select Subregion</option>';
 qiadatSel.innerHTML = opts;
 } catch (e) { console.error('Subregion load error:', e); }
 }
-
 // === LOAD SUBREGIONS FOR FILTER ===
 async function loadSubregionsForFilter(regionId) {
 const filter = document.getElementById('subregionFilter');
@@ -571,7 +564,6 @@ if (error) throw error;
 (data || []).forEach(s => { filter.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)}</option>`; });
 } catch (e) { console.error('Subregion filter load error:', e); }
 }
-
 // === ENRICH MEMBER WITH NAMES ===
 async function enrichMember(m) {
 const enriched = { ...m };
@@ -611,11 +603,10 @@ enriched.department_name = '-';
 }
 return enriched;
 }
-
 // === LOAD MEMBERS ===
 async function loadMembers() {
 const tbody = document.getElementById('membersTable');
-tbody.innerHTML = `<tr><td colspan="9" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading...</td></tr>`;
+tbody.innerHTML = `<tr><td colspan="7" class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i> Loading...</td></tr>`;
 try {
 console.log('Loading members...');
 let query = supabase.from('members').select('*').order('full_name', { ascending: true });
@@ -629,7 +620,7 @@ document.getElementById('currentRegionDisplay').textContent = 'All Regions';
 const { data: members, error } = await query;
 if (error) {
 console.error('Members query error:', error);
-tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);padding:40px;">
+tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);padding:40px;">
 <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}<br>
 <small>Check console for details</small>
 </td></tr>`;
@@ -650,13 +641,12 @@ renderMembers(allMembers);
 document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString()}`;
 } catch (err) {
 console.error('Load members error:', err);
-tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);padding:40px;">
+tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);padding:40px;">
 <i class="fas fa-exclamation-triangle"></i> Error: ${err.message}
 </td></tr>`;
 showNotification('Failed to load members', 'error');
 }
 }
-
 // === MAIN LOAD ===
 async function loadAllData() {
 try {
@@ -674,13 +664,11 @@ console.error('LoadAllData error:', e);
 showNotification('Failed to load data: ' + e.message, 'error');
 }
 }
-
 // === REGION SWITCH ===
 async function switchRegion() {
 currentRegionId = document.getElementById('regionSelector').value || null;
 await loadAllData();
 }
-
 // === UPDATE STATS ===
 function updateStats() {
 let k = 0, a = 0, nonK = 0;
@@ -699,7 +687,6 @@ document.getElementById('statAtfal').textContent = a;
 document.getElementById('statTotal').textContent = k + a;
 document.getElementById('statNonKhuddam').textContent = nonK;
 }
-
 // === UPDATE FILTER DROPDOWNS ===
 function updateFilterDropdowns() {
 const regionFilter = document.getElementById('regionFilter');
@@ -713,7 +700,6 @@ const usedSubs = new Set(allMembers.map(m => m.qiadat_id || m.subregion_id).filt
 usedSubs.forEach(id => { const name = subregionNames[id] || 'Unknown'; subregionOpts.push(`<option value="${id}">${escapeHtml(name)}</option>`); });
 subregionFilter.innerHTML = subregionOpts.join('');
 }
-
 // === TOGGLE NON-KHUDDAM FILTER ===
 window.toggleNonKhuddamFilter = function() {
 hideNonKhuddam = !hideNonKhuddam;
@@ -729,7 +715,6 @@ showNotification('Showing all members', 'info');
 }
 filterMembers();
 };
-
 // === FILTER MEMBERS ===
 function filterMembers() {
 const search = document.getElementById('memberSearch').value.toLowerCase();
@@ -754,12 +739,11 @@ return matchSearch && matchRegion && matchSubregion && matchAgeGroup && matchSta
 });
 renderMembers(filtered);
 }
-
 // === RENDER MEMBERS TABLE with row shading ===
 function renderMembers(membersToRender) {
 const tbody = document.getElementById('membersTable');
 if (!membersToRender || membersToRender.length === 0) {
-tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#666;">No members found</td></tr>';
+tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#666;">No members found</td></tr>';
 return;
 }
 let html = '';
@@ -768,15 +752,13 @@ const age = calculateAge(m.dob);
 const ageGroup = getAgeGroup(age);
 const ageGroupLabel = getAgeGroupLabel(ageGroup);
 const ageText = age !== null ? age + ' years' : 'N/A';
-const subregion = m.subregion_name || '-';
 const region = m.region_name || '-';
 const status = m.status || 'Active';
 // Combine Profession Category and Detail for display
-const professionDisplay = m.profession_category ? 
-    `<small style="display:block;font-weight:600;color:var(--khuddam-blue);">${escapeHtml(m.profession_category)}</small>` + 
-    `<small style="color:#666;">${escapeHtml(m.profession_detail || '')}</small>` 
-    : '-';
-
+const professionDisplay = m.profession_category ?
+`<small style="display:block;font-weight:600;color:var(--khuddam-blue);">${escapeHtml(m.profession_category)}</small>` +
+`<small style="color:#666;">${escapeHtml(m.profession_detail || '')}</small>`
+: '-';
 // determine row class for shading
 let rowClass = '';
 if (ageGroup === 'khuddam') rowClass = 'khuddam-row';
@@ -788,9 +770,7 @@ html += `<tr class="${rowClass}">
 <td>${escapeHtml(m.full_name || '')}</td>
 <td>${ageText}</td>
 <td style="min-width:150px;">${professionDisplay}</td>
-<td>${escapeHtml(subregion)}</td>
 <td>${escapeHtml(region)}</td>
-<td>${escapeHtml(m.phone || '-')}</td>
 <td><span class="status-badge ${status.toLowerCase()}">${escapeHtml(status)}</span></td>
 <td>
 <button class="action-btn view" onclick="viewMember('${m.id}')" title="View"><i class="fas fa-eye"></i></button>
@@ -801,7 +781,6 @@ html += `<tr class="${rowClass}">
 });
 tbody.innerHTML = html;
 }
-
 // === AGE PREVIEW ===
 function previewAgeGroup() {
 const dob = document.getElementById('dob').value;
@@ -827,7 +806,6 @@ desc.textContent = 'Below enrollment age';
 icon.className = 'fas fa-child';
 }
 }
-
 // === GENERATE MEMBER ID ===
 async function generateMemberId() {
 const regionSel = document.getElementById('region');
@@ -845,7 +823,6 @@ const id = `${regionPrefix}-${subPrefix}-${next}`;
 document.getElementById('memberId').value = id;
 return id;
 }
-
 // === SUBMIT FORM (ADD/EDIT) ===
 async function submitMemberForm() {
 const form = document.getElementById('enrollmentForm');
@@ -874,6 +851,8 @@ position: document.getElementById('position').value || null,
 address: document.getElementById('address').value || null,
 status: document.getElementById('status').value,
 // New Fields
+father_name: document.getElementById('fatherName').value || null,
+wasiyyat_number: document.getElementById('wasiyyatNumber').value || null,
 marital_status: document.getElementById('maritalStatus').value || null,
 profession_category: document.getElementById('professionCategory').value || null,
 profession_detail: document.getElementById('professionDetail').value || null,
@@ -906,7 +885,6 @@ console.error('Submit error:', err);
 showNotification('Failed: ' + err.message, 'error');
 }
 }
-
 // === VIEW MEMBER ===
 window.viewMember = async function(id) {
 const member = allMembers.find(m => m.id === id);
@@ -920,6 +898,8 @@ html: `
 <div style="text-align:left;padding:20px;">
 <p><strong>Member ID:</strong> ${escapeHtml(member.member_id || 'N/A')}</p>
 <p><strong>Full Name:</strong> ${escapeHtml(member.full_name || '')}</p>
+<p><strong>Son of:</strong> ${escapeHtml(member.father_name || 'Not Specified')}</p>
+<p><strong>Wasiyyat Number:</strong> ${escapeHtml(member.wasiyyat_number || 'Not Specified')}</p>
 <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
 <p><strong>Age:</strong> ${age !== null ? age + ' years' : 'N/A'}</p>
 <p><strong>Age Group:</strong> <span class="age-badge ${ageGroup}">${ageGroupLabel}</span></p>
@@ -941,13 +921,14 @@ confirmButtonText: 'Close',
 confirmButtonColor: '#1e3a5f'
 });
 };
-
 // === EDIT MEMBER ===
 window.editMember = async function(id) {
 const member = allMembers.find(m => m.id === id);
 if (!member) { showNotification('Member not found', 'error'); return; }
 document.getElementById('memberDbId').value = member.id;
 document.getElementById('fullName').value = member.full_name || '';
+document.getElementById('fatherName').value = member.father_name || '';
+document.getElementById('wasiyyatNumber').value = member.wasiyyat_number || '';
 document.getElementById('memberId').value = member.member_id || '';
 document.getElementById('dob').value = member.dob || member.date_of_birth || '';
 document.getElementById('phone').value = member.phone || '';
@@ -970,14 +951,12 @@ profCat.value = member.profession_category || '';
 // Trigger loadProfessionDetails to populate second dropdown
 loadProfessionDetails();
 setTimeout(() => {
-    document.getElementById('professionDetail').value = member.profession_detail || '';
+document.getElementById('professionDetail').value = member.profession_detail || '';
 }, 100);
-
 document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Edit Member';
 previewAgeGroup();
 document.getElementById('memberModal').classList.add('show');
 };
-
 // === DELETE MEMBER ===
 window.deleteMember = function(id) {
 Swal.fire({
@@ -1002,12 +981,13 @@ showNotification('Delete failed: ' + err.message, 'error');
 }
 });
 };
-
 // === MODALS ===
 function openAddModal() {
 document.getElementById('enrollmentForm').reset();
 document.getElementById('memberDbId').value = '';
 document.getElementById('memberId').value = '';
+document.getElementById('fatherName').value = '';
+document.getElementById('wasiyyatNumber').value = '';
 document.getElementById('ageGroupDisplay').textContent = 'Not calculated';
 document.getElementById('ageDescDisplay').textContent = 'Enter DOB to calculate';
 document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Register New Member';
@@ -1021,12 +1001,10 @@ loadDropdownData();
 function closeModal() {
 document.getElementById('memberModal').classList.remove('show');
 }
-
 // === REGION FILTER CHANGE ===
 document.getElementById('regionFilter')?.addEventListener('change', function() {
 loadSubregionsForFilter(this.value);
 });
-
 // === INIT ===
 async function init() {
 await loadAllData();
@@ -1034,7 +1012,6 @@ document.querySelectorAll('.modal').forEach(modal => {
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 });
 }
-
 // Expose globals
 window.switchRegion = switchRegion;
 window.loadAllData = loadAllData;
