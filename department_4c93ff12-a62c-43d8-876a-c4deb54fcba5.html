@@ -21,10 +21,12 @@
 --warning: #ffc107;
 --info: #17a2b8;
 /* age group background tints – very subtle */
---bg-khuddam: #e3f0ff;   /* soft blue */
---bg-atfal: #68e0a840;     /* soft cream/gold */
---bg-ansar: #ff00001a;     /* soft mint */
---bg-other: #f5f5f5;     /* light grey for others (child/unknown) */
+--bg-khuddam: #e3f0ff;
+--bg-atfal: #68e0a840;
+--bg-ansar: #ff00001a;
+--bg-other: #f5f5f5;
+/* NEW: Wasiyyat holder highlight */
+--bg-wasiyyat: #fff9e6;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Libre Franklin', sans-serif; background: var(--cream); color: #2d2d2d; min-height: 100vh; }
@@ -121,7 +123,12 @@ tr.khuddam-row { background-color: var(--bg-khuddam); }
 tr.atfal-row { background-color: var(--bg-atfal); }
 tr.ansar-row { background-color: var(--bg-ansar); }
 tr.other-row { background-color: var(--bg-other); }
-tr:hover { filter: brightness(0.98); } /* keep hover effect subtle */
+/* NEW: Wasiyyat holder row highlight */
+tr.wasiyyat-row { 
+  background-color: var(--bg-wasiyyat) !important; 
+  border-left: 3px solid var(--khuddam-gold);
+}
+tr:hover { filter: brightness(0.98); }
 .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
 .status-badge.active { background: #e8f5e9; color: #2e7d32; }
 .status-badge.inactive { background: #ffebee; color: #c62828; }
@@ -130,6 +137,17 @@ tr:hover { filter: brightness(0.98); } /* keep hover effect subtle */
 .age-badge.khuddam { background: #bbd6fb; color: #0d2e5c; }
 .age-badge.atfal { background: #00ff0d8f; color: #000000; }
 .age-badge.ansar { background: #ff000078; color: #000000; }
+/* NEW: Wasiyyat badge for quick identification */
+.wasiyyat-badge { 
+  background: var(--khuddam-gold); 
+  color: var(--khuddam-blue); 
+  padding: 2px 8px; 
+  border-radius: 12px; 
+  font-size: 0.7rem; 
+  font-weight: 700; 
+  margin-left: 6px;
+  vertical-align: middle;
+}
 .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; margin-right: 5px; }
 .action-btn.view { background: var(--khuddam-blue); color: white; }
 .action-btn.edit { background: var(--khuddam-gold); color: var(--khuddam-blue); }
@@ -267,6 +285,15 @@ KHUDDAM-UL-AHMADIYYA
 <option value="Active">Active</option>
 <option value="Inactive">Inactive</option>
 <option value="Suspended">Suspended</option>
+</select>
+</div>
+<!-- NEW: Wasiyyat Holders Filter -->
+<div class="filter-group">
+<label>Wasiyyat Holders</label>
+<select id="wasiyyatFilter" onchange="filterMembers()">
+<option value="all">All Members</option>
+<option value="yes">Wasiyyat No. Holders</option>
+<option value="no">Without Wasiyyat No.</option>
 </select>
 </div>
 </div>
@@ -535,7 +562,7 @@ return;
 detailSel.disabled = false;
 const options = PROFESSION_OPTIONS[category] || [];
 options.forEach(opt => {
-detailSel.innerHTML += `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}<\/option>`;
+detailSel.innerHTML += `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`;
 });
 };
 // === LOAD SUBREGIONS FOR FORM ===
@@ -722,6 +749,7 @@ const regionFilter = document.getElementById('regionFilter').value;
 const subregionFilter = document.getElementById('subregionFilter').value;
 const ageGroupFilter = document.getElementById('ageGroupFilter').value;
 const statusFilter = document.getElementById('statusFilter').value;
+const wasiyyatFilter = document.getElementById('wasiyyatFilter').value; // NEW
 if (regionFilter && regionFilter !== 'all') {
 loadSubregionsForFilter(regionFilter);
 }
@@ -735,7 +763,12 @@ const ageGroup = getAgeGroup(age);
 const matchAgeGroup = ageGroupFilter === 'all' || ageGroup === ageGroupFilter;
 const matchStatus = statusFilter === 'all' || (m.status || 'Active') === statusFilter;
 const matchNonKhuddam = !hideNonKhuddam || (age !== null && age >= 7 && age < 40);
-return matchSearch && matchRegion && matchSubregion && matchAgeGroup && matchStatus && matchNonKhuddam;
+// NEW: Wasiyyat filter logic
+const hasWasiyyat = m.wasiyyat_number && m.wasiyyat_number.trim() !== '';
+const matchWasiyyat = wasiyyatFilter === 'all' || 
+(wasiyyatFilter === 'yes' && hasWasiyyat) || 
+(wasiyyatFilter === 'no' && !hasWasiyyat);
+return matchSearch && matchRegion && matchSubregion && matchAgeGroup && matchStatus && matchNonKhuddam && matchWasiyyat;
 });
 renderMembers(filtered);
 }
@@ -765,9 +798,14 @@ if (ageGroup === 'khuddam') rowClass = 'khuddam-row';
 else if (ageGroup === 'atfal') rowClass = 'atfal-row';
 else if (ageGroup === 'ansar') rowClass = 'ansar-row';
 else rowClass = 'other-row';
-html += `<tr class="${rowClass}">
+// NEW: Add wasiyyat-row class if member has wasiyyat number
+const hasWasiyyat = m.wasiyyat_number && m.wasiyyat_number.trim() !== '';
+if (hasWasiyyat) rowClass += ' wasiyyat-row';
+// NEW: Wasiyyat badge for name column
+const wasiyyatBadge = hasWasiyyat ? `<span class="wasiyyat-badge" title="Wasiyyat No: ${escapeHtml(m.wasiyyat_number)}">✦ Wasiyyat</span>` : '';
+html += `<tr class="${rowClass.trim()}">
 <td><code style="font-size:0.85rem;">${escapeHtml(m.member_id || 'N/A')}</code></td>
-<td>${escapeHtml(m.full_name || '')}</td>
+<td>${escapeHtml(m.full_name || '')}${wasiyyatBadge}</td>
 <td>${ageText}</td>
 <td style="min-width:150px;">${professionDisplay}</td>
 <td>${escapeHtml(region)}</td>
@@ -899,7 +937,7 @@ html: `
 <p><strong>Member ID:</strong> ${escapeHtml(member.member_id || 'N/A')}</p>
 <p><strong>Full Name:</strong> ${escapeHtml(member.full_name || '')}</p>
 <p><strong>Son of:</strong> ${escapeHtml(member.father_name || 'Not Specified')}</p>
-<p><strong>Wasiyyat Number:</strong> ${escapeHtml(member.wasiyyat_number || 'Not Specified')}</p>
+<p><strong>Wasiyyat Number:</strong> <span style="color:var(--khuddam-gold);font-weight:700;">${escapeHtml(member.wasiyyat_number || 'Not Specified')}</span></p>
 <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
 <p><strong>Age:</strong> ${age !== null ? age + ' years' : 'N/A'}</p>
 <p><strong>Age Group:</strong> <span class="age-badge ${ageGroup}">${ageGroupLabel}</span></p>
