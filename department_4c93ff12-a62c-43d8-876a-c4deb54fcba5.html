@@ -118,6 +118,11 @@ tr:hover { filter: brightness(0.98); }
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: border-color 0.3s; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--khuddam-gold); }
 .form-group input[readonly] { background: #e9ecef; cursor: not-allowed; }
+/* Bai'at Type Radio Buttons */
+.baiat-type-group { display: flex; gap: 20px; padding: 10px 0; }
+.baiat-type-option { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.baiat-type-option input[type="radio"] { width: 18px; height: 18px; accent-color: var(--khuddam-gold); cursor: pointer; }
+.baiat-type-option label { font-weight: 500; color: var(--khuddam-blue); cursor: pointer; }
 @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; } }
 @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .header-container { flex-direction: column; align-items: stretch; } .welcome-banner { flex-direction: column; text-align: center; } .action-bar { justify-content: center; } .modal-content { max-width: 95%; } }
 </style>
@@ -281,9 +286,22 @@ KHUDDAM-UL-AHMADIYYA
 <label>Date of Birth *</label>
 <input type="date" id="dob" required onchange="previewAgeGroup()">
 </div>
-<div class="form-group">
+<div class="form-group full-width">
+<label>Bai'at Type</label>
+<div class="baiat-type-group">
+<div class="baiat-type-option">
+<input type="radio" id="baiatBorn" name="baiatType" value="Born" onchange="toggleBaiatDateField()">
+<label for="baiatBorn">Born Ahmadi</label>
+</div>
+<div class="baiat-type-option">
+<input type="radio" id="baiatEntered" name="baiatType" value="Entered" onchange="toggleBaiatDateField()">
+<label for="baiatEntered">Entered Ahmadiyyat</label>
+</div>
+</div>
+</div>
+<div class="form-group" id="dateOfBaiatGroup" style="display:none;">
 <label>Date of Bai'at</label>
-<input type="date" id="dateOfBaiat" placeholder="Select bai'at date">
+<input type="date" id="dateOfBaiat">
 </div>
 <div class="form-group">
 <label>Marital Status</label>
@@ -434,6 +452,20 @@ didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toas
 });
 Toast.fire({ icon: type, title: msg });
 }
+// === TOGGLE BAI'AT DATE FIELD ===
+window.toggleBaiatDateField = function() {
+const bornRadio = document.getElementById('baiatBorn');
+const dateGroup = document.getElementById('dateOfBaiatGroup');
+const dateInput = document.getElementById('dateOfBaiat');
+if (bornRadio && bornRadio.checked) {
+dateGroup.style.display = 'none';
+dateInput.value = '';
+dateInput.required = false;
+} else {
+dateGroup.style.display = 'block';
+dateInput.required = false;
+}
+};
 async function loadDropdownData() {
 try {
 const { data: regions, error: regErr } = await supabase.from('regions').select('id, name').eq('active', true).order('name');
@@ -590,7 +622,7 @@ await loadDropdownData();
 await loadMembers();
 } catch (e) {
 console.error('LoadAllData error:', e);
-showNotification('Failed to load data: ' + e.message, 'error');
+showNotification('Failed to load  ' + e.message, 'error');
 }
 }
 async function switchRegion() {
@@ -757,6 +789,9 @@ if (!memberId) return;
 }
 const regionSel = document.getElementById('region');
 const regionName = regionSel.selectedOptions[0]?.text;
+// Get Bai'at Type
+const baiatBorn = document.getElementById('baiatBorn');
+const baiatType = baiatBorn && baiatBorn.checked ? 'Born' : (document.getElementById('baiatEntered') && document.getElementById('baiatEntered').checked ? 'Entered' : null);
 const memberData = {
 full_name: document.getElementById('fullName').value,
 dob: document.getElementById('dob').value,
@@ -773,7 +808,8 @@ address: document.getElementById('address').value || null,
 status: document.getElementById('status').value,
 father_name: document.getElementById('fatherName').value || null,
 wasiyyat_number: document.getElementById('wasiyyatNumber').value || null,
-date_of_baiat: document.getElementById('dateOfBaiat').value || null,
+date_of_baiat: baiatType === 'Born' ? null : (document.getElementById('dateOfBaiat').value || null),
+baiat_type: baiatType,
 marital_status: document.getElementById('maritalStatus').value || null,
 profession_category: document.getElementById('professionCategory').value || null,
 profession_detail: document.getElementById('professionDetail').value || null,
@@ -800,6 +836,7 @@ document.getElementById('memberDbId').value = '';
 document.getElementById('memberId').value = '';
 document.getElementById('ageGroupDisplay').textContent = 'Not calculated';
 document.getElementById('ageDescDisplay').textContent = 'Enter DOB to calculate';
+document.getElementById('dateOfBaiatGroup').style.display = 'none';
 await loadAllData();
 } catch (err) {
 console.error('Submit error:', err);
@@ -812,6 +849,7 @@ if (!member) { showNotification('Member not found', 'error'); return; }
 const age = calculateAge(member.dob);
 const ageGroup = getAgeGroup(age);
 const ageGroupLabel = getAgeGroupLabel(ageGroup);
+const baiatDisplay = member.baiat_type === 'Born' ? 'Born Ahmadi' : (member.date_of_baiat || 'Not Specified');
 Swal.fire({
 title: '<i class="fas fa-user"></i> Member Details',
 html: `
@@ -821,7 +859,8 @@ html: `
 <p><strong>Son of:</strong> ${escapeHtml(member.father_name || 'Not Specified')}</p>
 <p><strong>Wasiyyat Number:</strong> <span style="color:var(--khuddam-gold);font-weight:700;">${escapeHtml(member.wasiyyat_number || 'Not Specified')}</span></p>
 <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
-<p><strong>Date of Bai'at:</strong> ${member.date_of_baiat || 'Not Specified'}</p>
+<p><strong>Bai'at Type:</strong> ${escapeHtml(baiatDisplay)}</p>
+<p><strong>Date of Bai'at:</strong> ${member.baiat_type === 'Born' ? 'N/A (Born Ahmadi)' : (member.date_of_baiat || 'Not Specified')}</p>
 <p><strong>Age:</strong> ${age !== null ? age + ' years' : 'N/A'}</p>
 <p><strong>Age Group:</strong> <span class="age-badge ${ageGroup}">${ageGroupLabel}</span></p>
 <p><strong>Marital Status:</strong> ${escapeHtml(member.marital_status || 'Not Specified')}</p>
@@ -849,7 +888,6 @@ document.getElementById('memberDbId').value = member.id;
 document.getElementById('fullName').value = member.full_name || '';
 document.getElementById('fatherName').value = member.father_name || '';
 document.getElementById('wasiyyatNumber').value = member.wasiyyat_number || '';
-document.getElementById('dateOfBaiat').value = member.date_of_baiat || '';
 document.getElementById('memberId').value = member.member_id || '';
 document.getElementById('dob').value = member.dob || member.date_of_birth || '';
 document.getElementById('phone').value = member.phone || '';
@@ -861,6 +899,16 @@ document.getElementById('departmentId').value = member.department_id || '';
 document.getElementById('position').value = member.position || '';
 document.getElementById('status').value = member.status || 'Active';
 document.getElementById('address').value = member.address || '';
+// Bai'at Type
+if (member.baiat_type === 'Born') {
+document.getElementById('baiatBorn').checked = true;
+document.getElementById('dateOfBaiatGroup').style.display = 'none';
+document.getElementById('dateOfBaiat').value = '';
+} else {
+document.getElementById('baiatEntered').checked = true;
+document.getElementById('dateOfBaiatGroup').style.display = 'block';
+document.getElementById('dateOfBaiat').value = member.date_of_baiat || '';
+}
 document.getElementById('maritalStatus').value = member.marital_status || '';
 document.getElementById('educationLevel').value = member.education_level || '';
 const profCat = document.getElementById('professionCategory');
@@ -901,6 +949,9 @@ document.getElementById('memberId').value = '';
 document.getElementById('fatherName').value = '';
 document.getElementById('wasiyyatNumber').value = '';
 document.getElementById('dateOfBaiat').value = '';
+document.getElementById('dateOfBaiatGroup').style.display = 'none';
+document.getElementById('baiatBorn').checked = false;
+document.getElementById('baiatEntered').checked = false;
 document.getElementById('ageGroupDisplay').textContent = 'Not calculated';
 document.getElementById('ageDescDisplay').textContent = 'Enter DOB to calculate';
 document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Register New Member';
@@ -935,6 +986,7 @@ window.editMember = editMember;
 window.deleteMember = deleteMember;
 window.toggleNonKhuddamFilter = toggleNonKhuddamFilter;
 window.loadProfessionDetails = loadProfessionDetails;
+window.toggleBaiatDateField = toggleBaiatDateField;
 document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
