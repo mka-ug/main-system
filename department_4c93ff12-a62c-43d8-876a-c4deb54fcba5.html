@@ -25,7 +25,7 @@
 --bg-atfal: #68e0a840;
 --bg-ansar: #ff00001a;
 --bg-other: #f5f5f5;
-/* NEW: Wasiyyat holder highlight */
+/* Wasiyyat holder highlight */
 --bg-wasiyyat: #fff9e6;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -123,7 +123,7 @@ tr.khuddam-row { background-color: var(--bg-khuddam); }
 tr.atfal-row { background-color: var(--bg-atfal); }
 tr.ansar-row { background-color: var(--bg-ansar); }
 tr.other-row { background-color: var(--bg-other); }
-/* NEW: Wasiyyat holder row highlight */
+/* Wasiyyat holder row highlight */
 tr.wasiyyat-row { 
   background-color: var(--bg-wasiyyat) !important; 
   border-left: 3px solid var(--khuddam-gold);
@@ -137,7 +137,7 @@ tr:hover { filter: brightness(0.98); }
 .age-badge.khuddam { background: #bbd6fb; color: #0d2e5c; }
 .age-badge.atfal { background: #00ff0d8f; color: #000000; }
 .age-badge.ansar { background: #ff000078; color: #000000; }
-/* NEW: Wasiyyat badge for quick identification */
+/* Wasiyyat badge for quick identification */
 .wasiyyat-badge { 
   background: var(--khuddam-gold); 
   color: var(--khuddam-blue); 
@@ -287,7 +287,7 @@ KHUDDAM-UL-AHMADIYYA
 <option value="Suspended">Suspended</option>
 </select>
 </div>
-<!-- NEW: Wasiyyat Holders Filter -->
+<!-- Wasiyyat Holders Filter -->
 <div class="filter-group">
 <label>Wasiyyat Holders</label>
 <select id="wasiyyatFilter" onchange="filterMembers()">
@@ -351,6 +351,7 @@ KHUDDAM-UL-AHMADIYYA
 <label>Marital Status</label>
 <select id="maritalStatus">
 <option value="">Select Status</option>
+<option value="None">None</option>
 <option value="Single">Single</option>
 <option value="Married">Married</option>
 </select>
@@ -393,6 +394,7 @@ KHUDDAM-UL-AHMADIYYA
 <label>Highest Education Level</label>
 <select id="educationLevel">
 <option value="">Select Level</option>
+<option value="None">None</option>
 <option value="Certificate">Certificate</option>
 <option value="Diploma">Diploma</option>
 <option value="Bachelors Degree">Bachelors Degree</option>
@@ -505,7 +507,7 @@ Toast.fire({ icon: type, title: msg });
 async function loadDropdownData() {
 try {
 // Regions
-const { data: regions, error: regErr } = await supabase.from('regions').select('id, name').eq('active', true).order('name');
+const {  regions, error: regErr } = await supabase.from('regions').select('id, name').eq('active', true).order('name');
 if (regErr) throw regErr;
 allRegions = regions || [];
 regionNames = {};
@@ -522,7 +524,7 @@ document.getElementById('regionSelector').innerHTML = selOpts;
 document.getElementById('region').innerHTML = formOpts;
 document.getElementById('regionFilter').innerHTML = filterOpts;
 // Departments
-const { data: depts, error: deptErr } = await supabase.from('departments').select('id, name').order('name');
+const {  depts, error: deptErr } = await supabase.from('departments').select('id, name').order('name');
 if (deptErr) throw deptErr;
 allDepartments = depts || [];
 departmentNames = {};
@@ -533,7 +535,7 @@ deptOpts += `<option value="${d.id}">${escapeHtml(d.name)}</option>`;
 });
 document.getElementById('departmentId').innerHTML = deptOpts;
 // Subregions
-const { data: subs, error: subErr } = await supabase.from('subregions').select('id, region_id, name').eq('active', true).order('name');
+const {  subs, error: subErr } = await supabase.from('subregions').select('id, region_id, name').eq('active', true).order('name');
 if (subErr) throw subErr;
 allSubregions = subs || [];
 subregionNames = {};
@@ -688,7 +690,7 @@ await loadDropdownData();
 await loadMembers();
 } catch (e) {
 console.error('LoadAllData error:', e);
-showNotification('Failed to load data: ' + e.message, 'error');
+showNotification('Failed to load  ' + e.message, 'error');
 }
 }
 // === REGION SWITCH ===
@@ -749,7 +751,7 @@ const regionFilter = document.getElementById('regionFilter').value;
 const subregionFilter = document.getElementById('subregionFilter').value;
 const ageGroupFilter = document.getElementById('ageGroupFilter').value;
 const statusFilter = document.getElementById('statusFilter').value;
-const wasiyyatFilter = document.getElementById('wasiyyatFilter').value; // NEW
+const wasiyyatFilter = document.getElementById('wasiyyatFilter').value;
 if (regionFilter && regionFilter !== 'all') {
 loadSubregionsForFilter(regionFilter);
 }
@@ -763,7 +765,7 @@ const ageGroup = getAgeGroup(age);
 const matchAgeGroup = ageGroupFilter === 'all' || ageGroup === ageGroupFilter;
 const matchStatus = statusFilter === 'all' || (m.status || 'Active') === statusFilter;
 const matchNonKhuddam = !hideNonKhuddam || (age !== null && age >= 7 && age < 40);
-// NEW: Wasiyyat filter logic
+// Wasiyyat filter logic
 const hasWasiyyat = m.wasiyyat_number && m.wasiyyat_number.trim() !== '';
 const matchWasiyyat = wasiyyatFilter === 'all' || 
 (wasiyyatFilter === 'yes' && hasWasiyyat) || 
@@ -798,10 +800,10 @@ if (ageGroup === 'khuddam') rowClass = 'khuddam-row';
 else if (ageGroup === 'atfal') rowClass = 'atfal-row';
 else if (ageGroup === 'ansar') rowClass = 'ansar-row';
 else rowClass = 'other-row';
-// NEW: Add wasiyyat-row class if member has wasiyyat number
+// Add wasiyyat-row class if member has wasiyyat number
 const hasWasiyyat = m.wasiyyat_number && m.wasiyyat_number.trim() !== '';
 if (hasWasiyyat) rowClass += ' wasiyyat-row';
-// NEW: Wasiyyat badge for name column
+// Wasiyyat badge for name column
 const wasiyyatBadge = hasWasiyyat ? `<span class="wasiyyat-badge" title="Wasiyyat No: ${escapeHtml(m.wasiyyat_number)}">✦ Wasiyyat</span>` : '';
 html += `<tr class="${rowClass.trim()}">
 <td><code style="font-size:0.85rem;">${escapeHtml(m.member_id || 'N/A')}</code></td>
@@ -854,7 +856,7 @@ if (!regionName || !qiadatId) { showNotification('Select Region & Subregion', 'e
 const regionPrefix = regionName.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase();
 const sub = allSubregions.find(s => s.id === qiadatId);
 const subPrefix = sub ? sub.name.replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase() : 'XX';
-const { data: existing } = await supabase.from('members').select('member_id').like('member_id', `${regionPrefix}-${subPrefix}-%`);
+const {  existing } = await supabase.from('members').select('member_id').like('member_id', `${regionPrefix}-${subPrefix}-%`);
 const count = existing ? existing.length : 0;
 const next = (count + 1).toString().padStart(4, '0');
 const id = `${regionPrefix}-${subPrefix}-${next}`;
@@ -888,7 +890,7 @@ department_id: document.getElementById('departmentId').value || null,
 position: document.getElementById('position').value || null,
 address: document.getElementById('address').value || null,
 status: document.getElementById('status').value,
-// New Fields
+// New Fields - Save "None" as string, not null
 father_name: document.getElementById('fatherName').value || null,
 wasiyyat_number: document.getElementById('wasiyyatNumber').value || null,
 marital_status: document.getElementById('maritalStatus').value || null,
@@ -980,7 +982,7 @@ document.getElementById('departmentId').value = member.department_id || '';
 document.getElementById('position').value = member.position || '';
 document.getElementById('status').value = member.status || 'Active';
 document.getElementById('address').value = member.address || '';
-// New Fields
+// New Fields - Will show "None" if saved as "None"
 document.getElementById('maritalStatus').value = member.marital_status || '';
 document.getElementById('educationLevel').value = member.education_level || '';
 // Handle Profession Cascading
